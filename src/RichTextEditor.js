@@ -136,6 +136,7 @@ export default class RichTextEditor extends Component {
           focusEditor={this._focus}
           toolbarConfig={toolbarConfig}
           customControls={customControls}
+          customStyleMap={customStyleMap}
         />
       );
     }

@@ -15,6 +15,7 @@ type Props = {
   selectedKey: ?string;
   onChange: (selectedKey: string) => any;
   className?: string;
+  customOption: Function;
 };
 
 export default class Dropdown extends Component {
@@ -26,16 +27,16 @@ export default class Dropdown extends Component {
   }
 
   render() {
-    let {choices, selectedKey, className, ...otherProps} = this.props;
+    let {choices, selectedKey, className, valueStyle = {}, colorSelectClassName, ...otherProps} = this.props;
     className = cx(className, styles.root);
     let selectedItem = (selectedKey == null) ? null : choices.get(selectedKey);
     let selectedValue = selectedItem && selectedItem.label || '';
     return (
       <span className={className} title={selectedValue}>
-        <select {...otherProps} value={selectedKey} onChange={this._onChange}>
+        <select {...otherProps} value={selectedKey} onChange={this._onChange} className={colorSelectClassName}>
           {this._renderChoices()}
         </select>
-        <span className={styles.value}>{selectedValue}</span>
+        <span className={styles.value} style={valueStyle}>{selectedValue}</span>
       </span>
     );
   }
@@ -49,7 +50,7 @@ export default class Dropdown extends Component {
     let {choices} = this.props;
     let entries = Array.from(choices.entries());
     return entries.map(([key, {label, className}]) => (
-      <option key={key} value={key} className={className}>{label}</option>
+      this.props.customOption ? this.props.customOption(key, label, className) : <option key={key} value={key} className={className}>{label}</option>
     ));
   }
 }

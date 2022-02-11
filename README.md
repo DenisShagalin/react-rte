@@ -1,27 +1,10 @@
-# React Rich Text Editor
-
-![Build Status](https://travis-ci.org/sstur/react-rte.svg?branch=master)
-
-This is a UI component built completely in React that is meant to be a full-featured textarea replacement similar to [CKEditor][ckeditor], [TinyMCE][tinymce] and other [rich text "WYSIWYG" editors][rte]. It's based on the excellent, open source [Draft.js][draft-js] from Facebook which is performant and production-tested.
-
-## Demo
-
-Try the editor here: [react-rte.org/demo][react-rte-demo]
-
-[![Screenshot 1](https://ucassets.blob.core.windows.net/uploads/rte.png)][react-rte-demo]
-
-
 ## Getting Started
 
-    $ npm install --save react-rte
+    $ npm install --save ds-react-rte
 
 `RichTextEditor` is the main editor component. It is comprised of the Draft.js `<Editor>`, some UI components (e.g. toolbar) and some helpful abstractions around getting and setting content with HTML/Markdown.
 
 `RichTextEditor` is designed to be used like a `textarea` except that instead of `value` being a string, it is an object with `toString` on it. Creating a `value` from a string is also easy using `createValueFromString(markup, 'html')`.
-
-### Browser Compatibility
-
-The scripts are transpiled by Babel to ES6. Additionally, at least one of this package's dependencies does not support IE. So, for IE and back-plat support you will need to include some polyfill in your HTML (#74, #196, #203): `<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=String.prototype.startsWith,Array.from,Array.prototype.fill,Array.prototype.keys,Array.prototype.findIndex,Number.isInteger&flags=gated"></script>`
 
 ### Required Webpack configuration
 
@@ -106,7 +89,26 @@ render() {
     BLOCK_TYPE_BUTTONS: [
       {label: 'UL', style: 'unordered-list-item'},
       {label: 'OL', style: 'ordered-list-item'}
-    ]
+    ],
+    COLOR_DROPDOWN: [
+      { label: 'Default', style: 'default-dropdown_option' },
+      { label: 'Red', style: 'red-dropdown_option' },
+      { label: 'Orange', style: 'orange-dropdown_option' },
+      { label: 'Yellow', style: 'yellow-dropdown_option' },
+      { label: 'Green', style: 'green-dropdown_option' },
+      { label: 'Blue', style: 'blue-dropdown_option' },
+      { label: 'Indigo', style: 'indigo-dropdown_option' },
+      { label: 'Violet', style: 'violet-dropdown_option' },
+    ],
+  };
+  const colorStyleMap = {
+    'red-dropdown_option': {
+      color: 'rgba(255, 0, 0, 1.0)',
+    },
+    'orange-dropdown_option': {
+      color: 'rgba(255, 127, 0, 1.0)',
+    },
+    ...
   };
   return (
     <RichTextEditor toolbarConfig={toolbarConfig} />
@@ -114,14 +116,6 @@ render() {
 }
 
 ```
-
-## Motivation
-
-In short, this is a 2016 approach to rich text editing built on modern, battle-hardened components and, importantly, we do not store document state in the DOM, eliminating entire classes of common "WYSIWYG" problems.
-
-This editor is built on [Draft.js][draft-js] from Facebook. Draft.js is more of a low-level framework (`contentEditable` abstraction), however this component is intended to be a fully polished UI component that you can reach for when you need to replace a `<textarea/>` in your application to support bold, italic, links, lists, etc.
-
-The data model in Draft.js allows us to represent the document in a way that is mostly agnostic to the view/render layer or the textual representation (html/markdown) you choose. This data model encapsulates the content/state of the editor and is based on [Immutable.js][immutablejs] to be both performant and easy to reason about.
 
 ## Features
 
@@ -198,15 +192,6 @@ React.createClass({
 });
 ```
 
-## TODO
-
- - Support images
- - Better test coverage
- - Documentation for using this editor in your projects
- - Fix some issues with Markdown parsing (migrate to `remark` parser)
- - Internationalization
- - Better icons and overall design
-
 ## Known Limitations
 
 Currently the biggest limitation is that images are not supported. There is a plan to support inline images (using decorators) and eventually Medium-style block-level images (using a custom block renderer).
@@ -231,13 +216,6 @@ console.error = (function(_error) {
   };
 })(console.error);
 ```
-
-## Contribute
-
-I'm happy to take pull requests for bug-fixes and improvements (and tests). If you have a feature you want to implement it's probably a good idea to open an issue first to see if it's already being worked on. Please match the code style of the rest of the project (ESLint should enforce this) and please include tests. Thanks!
-
-## Run the Demo
-Clone this project. Run `npm install`. Run `npm run build-dist` then point the server of your choice (like [serv][serv]) to `/demo.html`.
 
 ## License
 

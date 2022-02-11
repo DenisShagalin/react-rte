@@ -1,21 +1,54 @@
 /* @flow */
-import React, {Component} from 'react';
-import RichTextEditor, {createEmptyValue} from './RichTextEditor';
-import {convertToRaw} from 'draft-js';
+import React, { Component } from 'react';
+import RichTextEditor, { createValueFromString } from './RichTextEditor';
+import { convertToRaw } from 'draft-js';
 import autobind from 'class-autobind';
+import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
 
-import {getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles} from './lib/blockStyleFunctions';
-import ButtonGroup from './ui/ButtonGroup';
-import Dropdown from './ui/Dropdown';
-import IconButton from './ui/IconButton';
-
-import type {EditorValue} from './RichTextEditor';
+import type { EditorValue } from './RichTextEditor';
 
 type Props = {};
 type State = {
   value: EditorValue;
   format: string;
   readOnly: boolean;
+};
+
+const toolbarConfig = {
+  // Optionally specify the groups to display (displayed in the order listed).
+  display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'LINK_BUTTONS', 'BLOCK_TYPE_DROPDOWN', 'COLOR_DROPDOWN'],
+  INLINE_STYLE_BUTTONS: [
+    { label: 'Bold', style: 'BOLD', className: 'custom-css-class' },
+    { label: 'Italic', style: 'ITALIC' },
+    { label: 'Underline', style: 'UNDERLINE' }
+  ],
+  BLOCK_TYPE_DROPDOWN: [
+    { label: 'Normal', style: 'unstyled' },
+    { label: 'Heading Large', style: 'header-one' },
+    { label: 'Heading Medium', style: 'header-two' },
+    { label: 'Heading Small', style: 'header-three' }
+  ],
+  BLOCK_TYPE_BUTTONS: [
+    { label: 'UL', style: 'unordered-list-item' },
+    { label: 'OL', style: 'ordered-list-item' }
+  ],
+  COLOR_DROPDOWN: [
+    { label: 'Default', style: 'default-dropdown_option' },
+    { label: 'Red', style: 'red-dropdown_option' },
+    { label: 'Orange', style: 'orange-dropdown_option' },
+    { label: 'Yellow', style: 'yellow-dropdown_option' },
+    { label: 'Green', style: 'green-dropdown_option' },
+    { label: 'Blue', style: 'blue-dropdown_option' },
+    { label: 'Indigo', style: 'indigo-dropdown_option' },
+    { label: 'Violet', style: 'violet-dropdown_option' },
+  ],
+  extraProps: {
+    colorDropdownProps: {
+      showColorLabel: false,
+      colorWrapperClassname: 'test 2',
+      colorSelectClassName: 'test 1'
+    }
+  }
 };
 
 export default class EditorDemo extends Component {
@@ -26,14 +59,25 @@ export default class EditorDemo extends Component {
     super(...arguments);
     autobind(this);
     this.state = {
-      value: createEmptyValue(),
+      value: createValueFromString('<p>test <a class="red-dropdown_option" url="" href="">asd asd</a><a class="green-dropdown_option" url="" href="">tttt</a></p>', 'html', {
+        customInlineFn(elem, { Entity }) {
+          const { tagName, className  } = elem;
+          if (tagName === 'A' && colorStyleMap[className]) {
+            return Entity('LINK', { className });
+          }
+        }
+      }),
       format: 'html',
       readOnly: false,
     };
   }
 
+  onChange = (value) => {
+    this.setState({ value })
+  };
+
   render() {
-    let {value, format} = this.state;
+    let { value, format } = this.state;
 
     return (
       <div className="editor-demo">
@@ -43,40 +87,15 @@ export default class EditorDemo extends Component {
         <div className="row">
           <RichTextEditor
             value={value}
-            onChange={this._onChange}
+            onChange={this.onChange}
             className="react-rte-demo"
             placeholder="Tell a story"
             toolbarClassName="demo-toolbar"
             editorClassName="demo-editor"
             readOnly={this.state.readOnly}
             blockStyleFn={getTextAlignClassName}
-            customControls={[
-              // eslint-disable-next-line no-unused-vars
-              (setValue, getValue, editorState) => {
-                let choices = new Map([
-                  ['1', {label: '1'}],
-                  ['2', {label: '2'}],
-                  ['3', {label: '3'}],
-                ]);
-                return (
-                  <ButtonGroup key={1}>
-                    <Dropdown
-                      choices={choices}
-                      selectedKey={getValue('my-control-name')}
-                      onChange={(value) => setValue('my-control-name', value)}
-                    />
-                  </ButtonGroup>
-                );
-              },
-              <ButtonGroup key={2}>
-                <IconButton
-                  label="Remove Link"
-                  iconName="remove-link"
-                  focusOnClick={false}
-                  onClick={() => console.log('You pressed a button')}
-                />
-              </ButtonGroup>,
-            ]}
+            toolbarConfig={toolbarConfig}
+            customStyleMap={colorStyleMap}
           />
         </div>
         <div className="row">
@@ -113,7 +132,7 @@ export default class EditorDemo extends Component {
           <textarea
             className="source"
             placeholder="Editor Source"
-            value={value.toString(format, {blockStyleFn: getTextAlignStyles})}
+            value={value.toString(format, { blockStyleFn: getTextAlignStyles })}
             onChange={this._onChangeSource}
           />
         </div>
@@ -139,23 +158,46 @@ export default class EditorDemo extends Component {
     console.log(JSON.stringify(rawContentState));
   }
 
-  _onChange(value: EditorValue) {
-    this.setState({value});
-  }
-
   _onChangeSource(event: Object) {
     let source = event.target.value;
     let oldValue = this.state.value;
     this.setState({
-      value: oldValue.setContentFromString(source, this.state.format, {customBlockFn: getTextAlignBlockMetadata}),
+      vakue: oldValue.setContentFromString(source, this.state.format, { customBlockFn: getTextAlignBlockMetadata }),
     });
   }
 
   _onChangeFormat(event: Object) {
-    this.setState({format: event.target.value});
+    this.setState({ format: event.target.value });
   }
 
   _onChangeReadOnly(event: Object) {
-    this.setState({readOnly: event.target.checked});
+    this.setState({ readOnly: event.target.checked });
   }
 }
+
+const colorStyleMap = {
+  'red-dropdown_option': {
+    color: 'rgba(255, 0, 0, 1.0)',
+  },
+  'orange-dropdown_option': {
+    color: 'rgba(255, 127, 0, 1.0)',
+  },
+  'yellow-dropdown_option': {
+    color: 'rgba(180, 180, 0, 1.0)',
+  },
+  'green-dropdown_option': {
+    color: 'rgba(0, 180, 0, 1.0)',
+  },
+  'blue-dropdown_option': {
+    color: 'rgba(0, 0, 255, 1.0)',
+  },
+  'indigo-dropdown_option': {
+    color: 'rgba(75, 0, 130, 1.0)',
+  },
+  'violet-dropdown_option': {
+    color: 'rgba(127, 0, 255, 1.0)',
+  },
+  'default-dropdown_option': {
+    color: 'unset'
+  }
+};
