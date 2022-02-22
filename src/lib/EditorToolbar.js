@@ -202,14 +202,20 @@ export default class EditorToolbar extends Component {
 
   _renderColorDropdown(name: String, toolbarConfig: ToolbarConfig) {
     const { customStyleMap } = this.props;
-    const choices = new Map(
-      (toolbarConfig.COLOR_DROPDOWN || [])
-        .map((type) => [type.style, { label: type.label }])
-    );
+    // const choices = new Map(
+    //   (toolbarConfig.COLOR_DROPDOWN || [])
+    //     .map((type) => [type.style, { label: type.label }])
+    // );
 
     return (
       <ButtonGroup key={name}>
-        <Dropdown
+        <button onClick={this.toggleColor(true)}>
+          {toolbarConfig.COLOR_DROPDOWN.add && toolbarConfig.COLOR_DROPDOWN.add()}
+        </button>
+        <button onClick={this.toggleColor(false)}>
+          {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.remove()}
+        </button>
+        {/* <Dropdown
           {...toolbarConfig.extraProps}
           choices={choices}
           selectedKey={this.state.color}
@@ -237,7 +243,7 @@ export default class EditorToolbar extends Component {
               toolbarConfig.extraProps.colorDropdownProps.showColorLabel && label}
             </option>
           }}
-        />
+        /> */}
       </ButtonGroup>
     );
   }
@@ -492,7 +498,10 @@ export default class EditorToolbar extends Component {
       .getType();
   }
 
-  toggleColor = (toggledColor) => {
+  toggleColor = (isSelection) => () => {
+
+    const toggledColor = isSelection ? 'yellow-dropdown_option' : 'default-dropdown_option';
+    
     let { editorState, customStyleMap } = this.props;
     let selection = editorState.getSelection();
     let contentState = editorState.getCurrentContent();
