@@ -91,14 +91,8 @@ render() {
       {label: 'OL', style: 'ordered-list-item'}
     ],
     COLOR_DROPDOWN: [
-      { label: 'Default', style: 'default-dropdown_option' },
-      { label: 'Red', style: 'red-dropdown_option' },
-      { label: 'Orange', style: 'orange-dropdown_option' },
-      { label: 'Yellow', style: 'yellow-dropdown_option' },
-      { label: 'Green', style: 'green-dropdown_option' },
-      { label: 'Blue', style: 'blue-dropdown_option' },
-      { label: 'Indigo', style: 'indigo-dropdown_option' },
-      { label: 'Violet', style: 'violet-dropdown_option' },
+      add: () => {},
+      remove: () => {}
     ],
   };
   const colorStyleMap = {

@@ -201,49 +201,14 @@ export default class EditorToolbar extends Component {
   }
 
   _renderColorDropdown(name: String, toolbarConfig: ToolbarConfig) {
-    const { customStyleMap } = this.props;
-    // const choices = new Map(
-    //   (toolbarConfig.COLOR_DROPDOWN || [])
-    //     .map((type) => [type.style, { label: type.label }])
-    // );
-
     return (
       <ButtonGroup key={name}>
-        <button onClick={this.toggleColor(true)}>
+        <button onClick={this.toggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
           {toolbarConfig.COLOR_DROPDOWN.add && toolbarConfig.COLOR_DROPDOWN.add()}
         </button>
-        <button onClick={this.toggleColor(false)}>
+        <button onClick={this.toggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
           {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.remove()}
         </button>
-        {/* <Dropdown
-          {...toolbarConfig.extraProps}
-          choices={choices}
-          selectedKey={this.state.color}
-          onChange={this.toggleColor}
-          aria-label={'Color type'}
-          valueStyle={{ backgroundColor: customStyleMap[this.state.color].color }}
-          className={
-            toolbarConfig.extraProps &&
-            toolbarConfig.extraProps.colorDropdownProps &&
-            toolbarConfig.extraProps.colorDropdownProps.colorWrapperClassname || ''
-          }
-          colorSelectClassName={
-            toolbarConfig.extraProps &&
-            toolbarConfig.extraProps.colorDropdownProps &&
-            toolbarConfig.extraProps.colorDropdownProps.colorSelectClassName || ''
-          }
-          customOption={(key, label) => {
-            return <option
-              key={key}
-              value={key}
-              style={{ backgroundColor: customStyleMap[key].color }}
-            >
-              {toolbarConfig.extraProps &&
-              toolbarConfig.extraProps.colorDropdownProps &&
-              toolbarConfig.extraProps.colorDropdownProps.showColorLabel && label}
-            </option>
-          }}
-        /> */}
       </ButtonGroup>
     );
   }
@@ -499,7 +464,6 @@ export default class EditorToolbar extends Component {
   }
 
   toggleColor = (isSelection) => () => {
-
     const toggledColor = isSelection ? 'yellow-dropdown_option' : 'default-dropdown_option';
     
     let { editorState, customStyleMap } = this.props;
