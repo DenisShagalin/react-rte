@@ -300,7 +300,7 @@
   text-decoration: unset;
 }
 .yellow-dropdown_option {
-  color: rgba(180, 180, 0, 1.0);
+  background-color: yellow;
   text-decoration: unset;
 }
 .green-dropdown_option {
