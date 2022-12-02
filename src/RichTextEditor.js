@@ -284,7 +284,6 @@ export default class RichTextEditor extends Component {
     let eventFlags = {};
     this._keyEmitter.emit('keypress', event, eventFlags);
 
-    console.log(event.keyCode, 'CODE')
     // insert point for replace
     if (event.keyCode === 115) {
       event.preventDefault();
