@@ -66,6 +66,7 @@ type Props = {
   editorStyle?: Object;
   toolbarStyle?: Object;
   onBlur?: (event: Object) => void;
+  onInsert: () => void;
 };
 
 export default class RichTextEditor extends Component {
@@ -282,11 +283,39 @@ export default class RichTextEditor extends Component {
     // Allow toolbar to catch key combinations.
     let eventFlags = {};
     this._keyEmitter.emit('keypress', event, eventFlags);
+
+    console.log(event.keyCode, 'CODE')
+    // insert point for replace
+    if (event.keyCode === 115) {
+      event.preventDefault();
+      this._insertPoint();
+    }
+
     if (eventFlags.wasHandled) {
       return null;
     } else {
       return getDefaultKeyBinding(event);
     }
+  }
+
+  _insertPoint() {
+    const editorState = this.props.value.getEditorState();
+    const currentContent = editorState.getCurrentContent();
+    const selection = editorState.getSelection();
+    const entityKey = Entity.create(
+      'LINK', 'MUTABLE', { className: 'orange_insert-point' }
+    );
+    const textWithEntity = Modifier.insertText(
+      currentContent,
+      selection,
+      '<||>',
+      null,
+      entityKey
+    );
+
+    const newEditorState = EditorState.push(editorState, textWithEntity, 'insert-characters');
+    this._onChange(newEditorState);
+    this.props.onInsert && this.props.onInsert();
   }
 
   _handleKeyCommand(command: string): boolean {

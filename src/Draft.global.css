@@ -323,3 +323,8 @@
   color: unset;
   text-decoration: unset;
 }
+.orange_insert-point {
+  background-color: rgba(255, 127, 0, 1.0);
+  color: #FFFF;
+  text-decoration: unset;
+}

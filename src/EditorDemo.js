@@ -187,5 +187,10 @@ const colorStyleMap = {
   },
   'default-dropdown_option': {
     color: 'unset'
+  },
+  'orange_insert-point': {
+    backgroundColor: 'rgba(255, 127, 0, 1.0)',
+    textDecoration: 'unset',
+    color: '#FFFF'
   }
 };
