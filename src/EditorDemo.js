@@ -34,7 +34,8 @@ const toolbarConfig = {
   ],
   COLOR_DROPDOWN: {
     add: () => <span>add yellow</span>,
-    remove: () => <span>remove yellow</span>
+    remove: () => <span>remove yellow</span>,
+    insert: () => <span>insert</span>
   },
   extraProps: {}
 };

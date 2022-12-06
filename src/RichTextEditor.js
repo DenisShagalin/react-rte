@@ -134,6 +134,7 @@ export default class RichTextEditor extends Component {
           keyEmitter={this._keyEmitter}
           editorState={editorState}
           onChange={this._onChange}
+          onInsert={this._insertPoint}
           focusEditor={this._focus}
           toolbarConfig={toolbarConfig}
           customControls={customControls}

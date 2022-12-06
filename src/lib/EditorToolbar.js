@@ -209,6 +209,9 @@ export default class EditorToolbar extends Component {
         <button onClick={this.toggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
           {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.remove()}
         </button>
+        <button onClick={this.props.onInsert} onMouseDown={(e) => e.preventDefault()}>
+          {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.insert()}
+        </button>
       </ButtonGroup>
     );
   }
@@ -465,7 +468,7 @@ export default class EditorToolbar extends Component {
 
   toggleColor = (isSelection) => () => {
     const toggledColor = isSelection ? 'yellow-dropdown_option' : 'default-dropdown_option';
-    
+
     let { editorState, customStyleMap } = this.props;
     let selection = editorState.getSelection();
     let contentState = editorState.getCurrentContent();
@@ -485,7 +488,7 @@ export default class EditorToolbar extends Component {
       nextContentState,
       'change-inline-style'
     );
-    
+
     const currentStyle = editorState.getCurrentInlineStyle();
 
     // Unset style override for current color.
