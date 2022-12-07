@@ -328,3 +328,15 @@
   color: #FFFF;
   text-decoration: unset;
 }
+.text-indent {
+  padding-left: 1.5em;
+  text-decoration: unset;
+  color: unset;
+  display: block;
+}
+.text-outdent {
+  padding-left: unset;
+  text-decoration: unset;
+  color: unset;
+  display: unset;
+};

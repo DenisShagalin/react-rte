@@ -16,7 +16,7 @@ type State = {
 
 const toolbarConfig = {
   // Optionally specify the groups to display (displayed in the order listed).
-  display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'LINK_BUTTONS', 'BLOCK_TYPE_DROPDOWN', 'COLOR_DROPDOWN'],
+  display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'LINK_BUTTONS', 'BLOCK_TYPE_DROPDOWN', 'EXTRA_OPTIONS'],
   INLINE_STYLE_BUTTONS: [
     { label: 'Bold', style: 'BOLD', className: 'custom-css-class' },
     { label: 'Italic', style: 'ITALIC' },
@@ -32,10 +32,18 @@ const toolbarConfig = {
     { label: 'UL', style: 'unordered-list-item' },
     { label: 'OL', style: 'ordered-list-item' }
   ],
-  COLOR_DROPDOWN: {
+  TEST_BUTTONS: [
+    {
+      label: 'test',
+      style: 'TEST'
+    }
+  ],
+  EXTRA_OPTIONS: {
     add: () => <span>add yellow</span>,
     remove: () => <span>remove yellow</span>,
-    insert: () => <span>insert</span>
+    insert: () => <span>insert</span>,
+    indent: () => <span>indent</span>,
+    outdent: () => <span>outdent</span>
   },
   extraProps: {}
 };
@@ -50,7 +58,7 @@ export default class EditorDemo extends Component {
     this.state = {
       value: createValueFromString('<p>test <a class="red-dropdown_option" url="" href="">asd asd</a><a class="green-dropdown_option" url="" href="">tttt</a></p>', 'html', {
         customInlineFn(elem, { Entity }) {
-          const { tagName, className  } = elem;
+          const { tagName, className } = elem;
           if (tagName === 'A' && colorStyleMap[className]) {
             return Entity('LINK', { className });
           }

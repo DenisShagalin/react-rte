@@ -98,8 +98,8 @@ export default class EditorToolbar extends Component {
         case 'HISTORY_BUTTONS': {
           return this._renderUndoRedo(groupName, toolbarConfig);
         }
-        case 'COLOR_DROPDOWN': {
-          return this._renderColorDropdown(groupName, toolbarConfig);
+        case 'EXTRA_OPTIONS': {
+          return this._extraOptions(groupName, toolbarConfig);
         }
       }
     });
@@ -200,18 +200,34 @@ export default class EditorToolbar extends Component {
     );
   }
 
-  _renderColorDropdown(name: String, toolbarConfig: ToolbarConfig) {
+  _extraOptions(name: String, toolbarConfig: ToolbarConfig) {
     return (
       <ButtonGroup key={name}>
-        <button onClick={this.toggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
-          {toolbarConfig.COLOR_DROPDOWN.add && toolbarConfig.COLOR_DROPDOWN.add()}
-        </button>
-        <button onClick={this.toggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
-          {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.remove()}
-        </button>
-        <button onClick={this.props.onInsert} onMouseDown={(e) => e.preventDefault()}>
-          {toolbarConfig.COLOR_DROPDOWN.remove && toolbarConfig.COLOR_DROPDOWN.insert()}
-        </button>
+        {toolbarConfig.EXTRA_OPTIONS.add && (
+          <button onClick={this.toggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.add()}
+          </button>
+        )}
+        {toolbarConfig.EXTRA_OPTIONS.remove && (
+          <button onClick={this.toggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.remove()}
+          </button>
+        )}
+        {toolbarConfig.EXTRA_OPTIONS.indent && (
+          <button onClick={this.indent(true)} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.indent()}
+          </button>
+        )}
+        {toolbarConfig.EXTRA_OPTIONS.outdent && (
+          <button onClick={this.indent(false)} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.outdent()}
+          </button>
+        )}
+        {toolbarConfig.EXTRA_OPTIONS.insert && (
+          <button onClick={this.props.onInsert} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.insert()}
+          </button>
+        )}
       </ButtonGroup>
     );
   }
@@ -514,6 +530,54 @@ export default class EditorToolbar extends Component {
     this.setState({ color: toggledColor });
     this.props.onChange(nextEditorState);
   }
+
+  indent = (isIndent) => () => {
+    const style = isIndent ? 'text-indent' : 'text-outdent';
+
+    let { editorState, customStyleMap } = this.props;
+    let selection = editorState.getSelection();
+    let contentState = editorState.getCurrentContent();
+
+    let origSelection = selection;
+
+    // Let's just allow one color at a time. Turn off all active colors.
+    let nextContentState = Object.keys(customStyleMap)
+      .reduce((contentState, color) => {
+        return Modifier.removeInlineStyle(contentState, selection, color)
+      }, editorState.getCurrentContent());
+
+    nextContentState = nextContentState.createEntity('LINK', 'MUTABLE', { className: style });
+
+    let nextEditorState = EditorState.push(
+      editorState,
+      nextContentState,
+      'change-inline-style'
+    );
+
+    const currentStyle = editorState.getCurrentInlineStyle();
+
+    // Unset style override for current color.
+    if (selection.isCollapsed()) {
+      nextEditorState = currentStyle.reduce((state, color) => {
+        return RichUtils.toggleInlineStyle(state, color);
+      }, nextEditorState);
+    }
+
+    // If the color is being toggled on, apply it.
+    if (!currentStyle.has(style)) {
+      nextEditorState = RichUtils.toggleInlineStyle(
+        nextEditorState,
+        style
+      );
+    }
+
+    let entityKey = nextContentState.getLastCreatedEntityKey();
+    nextEditorState = EditorState.push(nextEditorState, contentState);
+    nextEditorState = RichUtils.toggleLink(nextEditorState, selection, entityKey);
+    nextEditorState = EditorState.acceptSelection(nextEditorState, origSelection);
+
+    this.props.onChange(nextEditorState);
+  };
 
   _selectBlockType() {
     this._toggleBlockType(...arguments);
