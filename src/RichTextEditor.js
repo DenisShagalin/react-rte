@@ -288,7 +288,7 @@ export default class RichTextEditor extends Component {
     // insert point for replace
     if (event.keyCode === 115) {
       event.preventDefault();
-      this._insertPoint();
+      this._insertPoint(true);
     }
 
     if (eventFlags.wasHandled) {
@@ -298,7 +298,7 @@ export default class RichTextEditor extends Component {
     }
   }
 
-  _insertPoint() {
+  _insertPoint(isKeyHandler = false) {
     const editorState = this.props.value.getEditorState();
     const currentContent = editorState.getCurrentContent();
     const selection = editorState.getSelection();
@@ -315,7 +315,7 @@ export default class RichTextEditor extends Component {
 
     const newEditorState = EditorState.push(editorState, textWithEntity, 'insert-characters');
     this._onChange(newEditorState);
-    this.props.onInsert && this.props.onInsert();
+    this.props.onInsert && this.props.onInsert(isKeyHandler);
   }
 
   _handleKeyCommand(command: string): boolean {
