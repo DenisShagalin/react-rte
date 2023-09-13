@@ -1,6 +1,6 @@
 /* @flow */
 import React, { Component } from 'react';
-import RichTextEditor, { createValueFromString } from './RichTextEditor';
+import RichTextEditor, { createValueFromString, createEmptyValue } from './RichTextEditor';
 import { convertToRaw } from 'draft-js';
 import autobind from 'class-autobind';
 import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
@@ -66,6 +66,7 @@ export default class EditorDemo extends Component {
       }),
       format: 'html',
       readOnly: false,
+      value2: createEmptyValue()
     };
   }
 
@@ -73,8 +74,12 @@ export default class EditorDemo extends Component {
     this.setState({ value })
   };
 
+  onChange2 = (value) => {
+    this.setState({ value2: value })
+  };
+
   render() {
-    let { value, format } = this.state;
+    let { value, format, value2 } = this.state;
 
     return (
       <div className="editor-demo">
@@ -85,6 +90,18 @@ export default class EditorDemo extends Component {
           <RichTextEditor
             value={value}
             onChange={this.onChange}
+            className="react-rte-demo"
+            placeholder="Tell a story"
+            toolbarClassName="demo-toolbar"
+            editorClassName="demo-editor"
+            readOnly={this.state.readOnly}
+            blockStyleFn={getTextAlignClassName}
+            toolbarConfig={toolbarConfig}
+            customStyleMap={colorStyleMap}
+          />
+           <RichTextEditor
+            value={value2}
+            onChange={this.onChange2}
             className="react-rte-demo"
             placeholder="Tell a story"
             toolbarClassName="demo-toolbar"

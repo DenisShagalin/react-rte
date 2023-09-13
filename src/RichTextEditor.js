@@ -19,6 +19,8 @@ import autobind from 'class-autobind';
 import EventEmitter from 'events';
 import {BLOCK_TYPE} from 'draft-js-utils';
 
+import { editOnPaste, EMPTY_PARAGRAPH_MARK } from './lib/onPasteEdit';
+
 import './Draft.global.css';
 import styles from './RichTextEditor.css';
 
@@ -163,6 +165,9 @@ export default class RichTextEditor extends Component {
             }}
             spellCheck={true}
             readOnly={readOnly}
+            onPaste={otherProps.onPaste ? otherProps.onPaste : (editor, e) => {
+              editOnPaste(editor, e);
+            }}
           />
         </div>
         { toolbarOnBottom && editorToolbar }
@@ -421,4 +426,6 @@ export {
   ButtonGroup,
   Button,
   Dropdown,
+  EMPTY_PARAGRAPH_MARK,
+  editOnPaste,
 };
