@@ -19,7 +19,7 @@ import autobind from 'class-autobind';
 import EventEmitter from 'events';
 import {BLOCK_TYPE} from 'draft-js-utils';
 
-import { editOnPaste, EMPTY_PARAGRAPH_MARK } from './lib/onPasteEdit';
+import { editOnPaste, EMPTY_PARAGRAPH_MARK, UNIQUE_PARAGRAPH } from './lib/onPasteEdit';
 
 import './Draft.global.css';
 import styles from './RichTextEditor.css';
@@ -340,6 +340,12 @@ export default class RichTextEditor extends Component {
       return;
     }
     let newValue = value.setEditorState(editorState);
+    let valueString = newValue.toString('html');
+    if (valueString.includes(UNIQUE_PARAGRAPH)) {
+      valueString = valueString.replaceAll(UNIQUE_PARAGRAPH, '<p><br></p>');
+      onChange(createValueFromString(valueString, 'html'));
+      return;
+    }
     let newEditorState = newValue.getEditorState();
     this._handleInlineImageSelection(newEditorState);
     onChange(newValue);
@@ -427,5 +433,6 @@ export {
   Button,
   Dropdown,
   EMPTY_PARAGRAPH_MARK,
+  UNIQUE_PARAGRAPH,
   editOnPaste,
 };

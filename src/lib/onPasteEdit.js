@@ -7,6 +7,7 @@ import CharacterMetadata from 'draft-js/lib/CharacterMetadata';
 import getEntityKeyForSelection from 'draft-js/lib/getEntityKeyForSelection';
 import DataTransfer from 'fbjs/lib/DataTransfer';
 
+export const UNIQUE_PARAGRAPH = '<p>__unique_draftjs_empty_paragraph</p>';
 export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</span>';
 export const emptyLineRegex = /<br data-text="true">/g;
 
@@ -34,7 +35,7 @@ function areTextBlocksAndClipboardEqual(textBlocks, blockMap) {
 export const editOnPaste = (editor, e) => {
   e.preventDefault();
   const data = new DataTransfer(e.clipboardData);
-  console.log(data)
+
   var textBlocks = [];
   var text = data.getText();
   var html = data.getHTML();
