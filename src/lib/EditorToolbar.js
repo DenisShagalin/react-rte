@@ -532,11 +532,34 @@ export default class EditorToolbar extends Component {
   }
 
   indent = (isIndent) => () => {
-    const style = isIndent ? 'text-indent' : 'text-outdent';
+    const style = isIndent ? 'text-indent' : '';
 
     let { editorState, customStyleMap } = this.props;
     let selection = editorState.getSelection();
     let contentState = editorState.getCurrentContent();
+
+    const blockKey = selection.getStartKey();
+    const currentBlock = editorState.getCurrentContent().getBlockForKey(blockKey);
+    const type = currentBlock.getType();
+
+    if (type === "unordered-list-item" || type === "ordered-list-item") {
+      let newEditorState = RichUtils.onTab(
+        {
+          which: () => 9,
+          keyCode: () => 9,
+          key: () => "Tab",
+          preventDefault: () => {},
+          shiftKey: !isIndent
+        },
+        editorState,
+        2
+      );
+
+      if (newEditorState !== editorState) {
+        this.props.onChange(newEditorState);
+      }
+      return;
+    }
 
     let origSelection = selection;
 
@@ -546,7 +569,7 @@ export default class EditorToolbar extends Component {
         return Modifier.removeInlineStyle(contentState, selection, color)
       }, editorState.getCurrentContent());
 
-    nextContentState = nextContentState.createEntity('LINK', 'MUTABLE', { className: style });
+    nextContentState = nextContentState.createEntity(isIndent ? 'LINK' : 'SPAN', 'MUTABLE', { className: style });
 
     let nextEditorState = EditorState.push(
       editorState,
