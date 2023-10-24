@@ -41,7 +41,7 @@ export const editOnPaste = (editor, e) => {
   var html = data.getHTML();
   var editorState = editor._latestEditorState;
 
-  html = html.replaceAll(emptyLineRegex, EMPTY_PARAGRAPH_MARK);
+  html = html && html.replaceAll(emptyLineRegex, EMPTY_PARAGRAPH_MARK);
 
   if (editor.props.handlePastedText && isEventHandled(editor.props.handlePastedText(text, html, editorState))) {
     return;
