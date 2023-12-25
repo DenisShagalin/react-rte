@@ -1,8 +1,8 @@
 /* @flow */
-import React, {Component} from 'react';
-import {CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity} from 'draft-js';
+import React, { Component } from 'react';
+import { CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity } from 'draft-js';
 import getDefaultKeyBinding from 'draft-js/lib/getDefaultKeyBinding';
-import {getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles} from './lib/blockStyleFunctions';
+import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
 import changeBlockDepth from './lib/changeBlockDepth';
 import changeBlockType from './lib/changeBlockType';
 import getBlocksInSelection from './lib/getBlocksInSelection';
@@ -17,16 +17,16 @@ import composite from './lib/composite';
 import cx from 'classnames';
 import autobind from 'class-autobind';
 import EventEmitter from 'events';
-import {BLOCK_TYPE} from 'draft-js-utils';
+import { BLOCK_TYPE } from 'draft-js-utils';
 
 import { editOnPaste, EMPTY_PARAGRAPH_MARK, UNIQUE_PARAGRAPH } from './lib/onPasteEdit';
 
 import './Draft.global.css';
 import styles from './RichTextEditor.css';
 
-import type {ContentBlock} from 'draft-js';
-import type {ToolbarConfig, CustomControl} from './lib/EditorToolbarConfig';
-import type {ImportOptions} from './lib/EditorValue';
+import type { ContentBlock } from 'draft-js';
+import type { ToolbarConfig, CustomControl } from './lib/EditorToolbarConfig';
+import type { ImportOptions } from './lib/EditorValue';
 
 import ButtonGroup from './ui/ButtonGroup';
 import Button from './ui/Button';
@@ -53,7 +53,7 @@ type Props = {
   value: EditorValue;
   onChange?: ChangeHandler;
   placeholder?: string;
-  customStyleMap?: {[style: string]: {[key: string]: any}};
+  customStyleMap?: { [style: string]: { [key: string]: any } };
   handleReturn?: (event: Object) => boolean;
   customControls?: Array<CustomControl>;
   readOnly?: boolean;
@@ -83,7 +83,7 @@ export default class RichTextEditor extends Component {
   }
 
   componentDidMount() {
-    const {autoFocus} = this.props;
+    const { autoFocus } = this.props;
 
     if (!autoFocus) {
       return;
@@ -114,7 +114,7 @@ export default class RichTextEditor extends Component {
       ...otherProps // eslint-disable-line comma-dangle
     } = this.props;
     let editorState = value.getEditorState();
-    customStyleMap = customStyleMap ? {...styleMap, ...customStyleMap} : styleMap;
+    customStyleMap = customStyleMap ? { ...styleMap, ...customStyleMap } : styleMap;
 
     // If the user changes block type before entering any text, we can either
     // style the placeholder or hide it. Let's just hide it for now.
@@ -146,7 +146,7 @@ export default class RichTextEditor extends Component {
     }
     return (
       <div className={cx(styles.root, className)} style={rootStyle}>
-        { !toolbarOnBottom && editorToolbar }
+        {!toolbarOnBottom && editorToolbar}
         <div className={combinedEditorClassName} style={editorStyle}>
           <Editor
             {...otherProps}
@@ -170,7 +170,7 @@ export default class RichTextEditor extends Component {
             }}
           />
         </div>
-        { toolbarOnBottom && editorToolbar }
+        {toolbarOnBottom && editorToolbar}
       </div>
     );
   }
@@ -187,7 +187,7 @@ export default class RichTextEditor extends Component {
   }
 
   _handleReturn(event: Object): boolean {
-    let {handleReturn} = this.props;
+    let { handleReturn } = this.props;
     if (handleReturn != null && handleReturn(event)) {
       return true;
     }
@@ -335,7 +335,7 @@ export default class RichTextEditor extends Component {
   }
 
   _onChange(editorState: EditorState) {
-    let {onChange, value} = this.props;
+    let { onChange, value } = this.props;
     if (onChange == null) {
       return;
     }
@@ -357,7 +357,7 @@ export default class RichTextEditor extends Component {
 
     const selectImage = (block, offset) => {
       const imageKey = block.getEntityAt(offset);
-      Entity.mergeData(imageKey, {selected: true});
+      Entity.mergeData(imageKey, { selected: true });
     };
 
     let isInMiddleBlock = (index) => index > 0 && index < blocks.size - 1;
@@ -373,8 +373,8 @@ export default class RichTextEditor extends Component {
         block,
         (offset) => {
           if (isWithinStartBlockSelection(offset, index) ||
-              isInMiddleBlock(index) ||
-              isWithinEndBlockSelection(offset, index)) {
+            isInMiddleBlock(index) ||
+            isWithinEndBlockSelection(offset, index)) {
             selectImage(block, offset);
           }
         });

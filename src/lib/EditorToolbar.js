@@ -548,7 +548,7 @@ export default class EditorToolbar extends Component {
           which: () => 9,
           keyCode: () => 9,
           key: () => "Tab",
-          preventDefault: () => {},
+          preventDefault: () => { },
           shiftKey: !isIndent
         },
         editorState,
@@ -617,12 +617,62 @@ export default class EditorToolbar extends Component {
   }
 
   _toggleInlineStyle(inlineStyle: string) {
-    this.props.onChange(
-      RichUtils.toggleInlineStyle(
-        this.props.editorState,
-        inlineStyle
-      )
-    );
+    const selectionState = this.props.editorState.getSelection();
+    const anchorKey = selectionState.getAnchorKey();
+    const focusKey = selectionState.getFocusKey();
+    let anchorOffset = selectionState.getEndOffset();
+    let focusOffset = selectionState.getStartOffset();
+
+    // nothing is selected
+    if (focusOffset === anchorOffset) {
+      return this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, inlineStyle));
+    }
+
+    const currentContent = this.props.editorState.getCurrentContent();
+    const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
+    const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
+
+    // selected all text or all block - no needs to change selection
+    if (focusOffset === 0 && anchorOffset === startBlockValue.length) {
+      return this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, inlineStyle));
+    }
+    // check end
+    if (endBlockValue && anchorOffset !== endBlockValue.length) {
+      let found = false;
+      for (let i = anchorOffset; i < endBlockValue.length; i++) {
+        if (!found && endBlockValue[i] === ' ') {
+          found = true;
+          anchorOffset = i;
+        }
+        if (!found && i === endBlockValue.length - 1) {
+          anchorOffset = i + 1;
+        }
+      }
+    }
+
+    // check start
+    if (startBlockValue && focusOffset !== 0) {
+      let found = false;
+      for (let i = focusOffset - 1; i >= 0; i--) {
+        if (!found && startBlockValue[i] === ' ') {
+          found = true;
+          focusOffset = i + 1;
+        }
+        if (!found && i === 0) {
+          focusOffset = i;
+        }
+      }
+    }
+
+    const newSelectionState = selectionState.merge({
+      anchorOffset: anchorOffset,
+      focusOffset: focusOffset,
+      anchorKey: anchorKey,
+      focusKey: focusKey,
+    });
+
+    const newState = EditorState.forceSelection(this.props.editorState, newSelectionState);
+    this.props.onChange(RichUtils.toggleInlineStyle(newState, inlineStyle));
   }
 
   _toggleAlignment(textAlign: string) {
