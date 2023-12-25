@@ -637,7 +637,11 @@ export default class EditorToolbar extends Component {
       return this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, inlineStyle));
     }
     // check end
-    if (endBlockValue && anchorOffset !== endBlockValue.length) {
+    if (
+      endBlockValue &&
+      anchorOffset !== endBlockValue.length &&
+      endBlockValue[anchorOffset - 1] !== ' '
+    ) {
       let found = false;
       for (let i = anchorOffset; i < endBlockValue.length; i++) {
         if (!found && endBlockValue[i] === ' ') {
@@ -651,7 +655,11 @@ export default class EditorToolbar extends Component {
     }
 
     // check start
-    if (startBlockValue && focusOffset !== 0) {
+    if (
+      startBlockValue &&
+      focusOffset !== 0 &&
+      startBlockValue[focusOffset] !== ' '
+    ) {
       let found = false;
       for (let i = focusOffset - 1; i >= 0; i--) {
         if (!found && startBlockValue[i] === ' ') {

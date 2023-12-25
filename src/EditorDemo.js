@@ -16,7 +16,7 @@ type State = {
 
 const toolbarConfig = {
   // Optionally specify the groups to display (displayed in the order listed).
-  display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'LINK_BUTTONS', 'BLOCK_TYPE_DROPDOWN', 'EXTRA_OPTIONS'],
+  display: ['INLINE_STYLE_BUTTONS', 'BLOCK_TYPE_BUTTONS', /*LINK_BUTTONS*/ 'BLOCK_TYPE_DROPDOWN', 'EXTRA_OPTIONS'],
   INLINE_STYLE_BUTTONS: [
     { label: 'Bold', style: 'BOLD', className: 'custom-css-class' },
     { label: 'Italic', style: 'ITALIC' },
