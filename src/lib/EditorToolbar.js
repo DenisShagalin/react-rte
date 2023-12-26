@@ -617,70 +617,8 @@ export default class EditorToolbar extends Component {
   }
 
   _toggleInlineStyle(inlineStyle: string) {
-    const selectionState = this.props.editorState.getSelection();
-    const anchorKey = selectionState.getAnchorKey();
-    const focusKey = selectionState.getFocusKey();
-    let anchorOffset = selectionState.getEndOffset();
-    let focusOffset = selectionState.getStartOffset();
-
-    // nothing is selected
-    if (focusOffset === anchorOffset) {
-      return this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, inlineStyle));
-    }
-
-    const currentContent = this.props.editorState.getCurrentContent();
-    const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
-    const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
-
-    // selected all text or all block - no needs to change selection
-    if (focusOffset === 0 && anchorOffset === startBlockValue.length) {
-      return this.props.onChange(RichUtils.toggleInlineStyle(this.props.editorState, inlineStyle));
-    }
-    // check end
-    if (
-      endBlockValue &&
-      anchorOffset !== endBlockValue.length &&
-      endBlockValue[anchorOffset - 1] !== ' '
-    ) {
-      let found = false;
-      for (let i = anchorOffset; i < endBlockValue.length; i++) {
-        if (!found && endBlockValue[i] === ' ') {
-          found = true;
-          anchorOffset = i;
-        }
-        if (!found && i === endBlockValue.length - 1) {
-          anchorOffset = i + 1;
-        }
-      }
-    }
-
-    // check start
-    if (
-      startBlockValue &&
-      focusOffset !== 0 &&
-      startBlockValue[focusOffset] !== ' '
-    ) {
-      let found = false;
-      for (let i = focusOffset - 1; i >= 0; i--) {
-        if (!found && startBlockValue[i] === ' ') {
-          found = true;
-          focusOffset = i + 1;
-        }
-        if (!found && i === 0) {
-          focusOffset = i;
-        }
-      }
-    }
-
-    const newSelectionState = selectionState.merge({
-      anchorOffset: anchorOffset,
-      focusOffset: focusOffset,
-      anchorKey: anchorKey,
-      focusKey: focusKey,
-    });
-
-    const newState = EditorState.forceSelection(this.props.editorState, newSelectionState);
-    this.props.onChange(RichUtils.toggleInlineStyle(newState, inlineStyle));
+    const updatedState = getStateWithFullWordSelection(this.props.editorState);
+    this.props.onChange(RichUtils.toggleInlineStyle(updatedState, inlineStyle));
   }
 
   _toggleAlignment(textAlign: string) {
@@ -733,3 +671,71 @@ export default class EditorToolbar extends Component {
     }, 50);
   }
 }
+
+export const getStateWithFullWordSelection = (editorState: EditorState): EditorState => {
+  const selectionState = editorState.getSelection();
+  const anchorKey = selectionState.getAnchorKey();
+  const focusKey = selectionState.getFocusKey();
+  let anchorOffset = selectionState.getEndOffset();
+  let focusOffset = selectionState.getStartOffset();
+
+  // nothing is selected
+  if (focusOffset === anchorOffset && anchorKey === focusKey) {
+    return editorState;
+  }
+
+  const currentContent = editorState.getCurrentContent();
+  const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
+  const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
+
+  // selected all text or all block - no needs to change selection
+  if (focusOffset === 0 && anchorOffset === startBlockValue.length) {
+    return editorState;
+  }
+
+  // check end
+  if (
+    endBlockValue &&
+    anchorOffset !== endBlockValue.length &&
+    endBlockValue[anchorOffset - 1] !== ' '
+  ) {
+    let found = false;
+    for (let i = anchorOffset; i < endBlockValue.length; i++) {
+      if (!found && endBlockValue[i] === ' ') {
+        found = true;
+        anchorOffset = i;
+      }
+      if (!found && i === endBlockValue.length - 1) {
+        anchorOffset = i + 1;
+      }
+    }
+  }
+
+  // check start
+  if (
+    startBlockValue &&
+    focusOffset !== 0 &&
+    startBlockValue[focusOffset] !== ' '
+  ) {
+    let found = false;
+    for (let i = focusOffset - 1; i >= 0; i--) {
+      if (!found && startBlockValue[i] === ' ') {
+        found = true;
+        focusOffset = i + 1;
+      }
+      if (!found && i === 0) {
+        focusOffset = i;
+      }
+    }
+  }
+
+  const newSelectionState = selectionState.merge({
+    anchorOffset: anchorOffset,
+    focusOffset: focusOffset,
+    anchorKey: anchorKey,
+    focusKey: focusKey,
+    isBackward: true,
+  });
+
+  return EditorState.forceSelection(editorState, newSelectionState);
+};

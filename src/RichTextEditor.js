@@ -9,7 +9,7 @@ import getBlocksInSelection from './lib/getBlocksInSelection';
 import insertBlockAfter from './lib/insertBlockAfter';
 import isListItem from './lib/isListItem';
 import isSoftNewlineEvent from 'draft-js/lib/isSoftNewlineEvent';
-import EditorToolbar from './lib/EditorToolbar';
+import EditorToolbar, { getStateWithFullWordSelection } from './lib/EditorToolbar';
 import EditorValue from './lib/EditorValue';
 import LinkDecorator from './lib/LinkDecorator';
 import ImageDecorator from './lib/ImageDecorator';
@@ -296,10 +296,20 @@ export default class RichTextEditor extends Component {
       this._insertPoint(true);
     }
 
+    const keyCommand = getDefaultKeyBinding(event);
+
+    if (['bold', 'italic', 'underline'].includes(keyCommand)) {
+      const editorState = this.props.value.getEditorState();
+      const updatedState = getStateWithFullWordSelection(editorState);
+      this._onChange(RichUtils.toggleInlineStyle(updatedState, keyCommand.toUpperCase()));
+      event.preventDefault();
+      return null;
+    }
+
     if (eventFlags.wasHandled) {
       return null;
     } else {
-      return getDefaultKeyBinding(event);
+      return keyCommand;
     }
   }
 
