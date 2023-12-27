@@ -672,12 +672,38 @@ export default class EditorToolbar extends Component {
   }
 }
 
+const processEndBlockValue = (offset, endBlockValue) => {
+  let endPosition = offset; // Initialize endPosition with the given offset
+
+  if (endBlockValue && endPosition < endBlockValue.length && endBlockValue[endPosition - 1] !== ' ') {
+    // Find the next space or reach the end of the string
+    while (endPosition < endBlockValue.length && endBlockValue[endPosition] !== ' ') {
+      endPosition++;
+    }
+  }
+  return endPosition; // Return the updated endPosition
+};
+
+const processStartBlockValue = (offset, startBlockValue) => {
+  let startPosition = offset; // Initialize startPosition with the given offset
+
+  if (startBlockValue && startPosition > 0 && startBlockValue[startPosition - 1] !== ' ') {
+    // Find the nearest space or reach the beginning of the string
+    while (startPosition > 0 && startBlockValue[startPosition - 1] !== ' ') {
+      startPosition--;
+    }
+  }
+  return startPosition; // Return the updated startPosition
+};
+
 export const getStateWithFullWordSelection = (editorState: EditorState): EditorState => {
   const selectionState = editorState.getSelection();
-  const anchorKey = selectionState.getAnchorKey();
-  const focusKey = selectionState.getFocusKey();
+  let anchorKey = selectionState.getAnchorKey();
+  let focusKey = selectionState.getFocusKey();
   let anchorOffset = selectionState.getEndOffset();
   let focusOffset = selectionState.getStartOffset();
+
+  const isBackward = selectionState.getIsBackward();
 
   // nothing is selected
   if (focusOffset === anchorOffset && anchorKey === focusKey) {
@@ -688,45 +714,15 @@ export const getStateWithFullWordSelection = (editorState: EditorState): EditorS
   const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
   const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
 
-  // selected all text or all block - no needs to change selection
-  if (focusOffset === 0 && anchorOffset === startBlockValue.length) {
-    return editorState;
-  }
-
-  // check end
-  if (
-    endBlockValue &&
-    anchorOffset !== endBlockValue.length &&
-    endBlockValue[anchorOffset - 1] !== ' '
-  ) {
-    let found = false;
-    for (let i = anchorOffset; i < endBlockValue.length; i++) {
-      if (!found && endBlockValue[i] === ' ') {
-        found = true;
-        anchorOffset = i;
-      }
-      if (!found && i === endBlockValue.length - 1) {
-        anchorOffset = i + 1;
-      }
-    }
-  }
-
-  // check start
-  if (
-    startBlockValue &&
-    focusOffset !== 0 &&
-    startBlockValue[focusOffset] !== ' '
-  ) {
-    let found = false;
-    for (let i = focusOffset - 1; i >= 0; i--) {
-      if (!found && startBlockValue[i] === ' ') {
-        found = true;
-        focusOffset = i + 1;
-      }
-      if (!found && i === 0) {
-        focusOffset = i;
-      }
-    }
+  if (isBackward || anchorKey === focusKey) {
+    anchorOffset = processEndBlockValue(anchorOffset, endBlockValue);
+    focusOffset = processStartBlockValue(focusOffset, startBlockValue);
+  } else {
+    const save = anchorKey;
+    anchorKey = focusKey;
+    focusKey = save;
+    anchorOffset = processEndBlockValue(anchorOffset, startBlockValue);
+    focusOffset = processStartBlockValue(focusOffset, endBlockValue);
   }
 
   const newSelectionState = selectionState.merge({
