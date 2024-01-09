@@ -534,7 +534,7 @@ export default class EditorToolbar extends Component {
   indent = (isIndent) => () => {
     const style = isIndent ? 'text-indent' : '';
 
-    let { editorState, customStyleMap } = this.props;
+    let { editorState } = this.props;
     let selection = editorState.getSelection();
     let contentState = editorState.getCurrentContent();
 
@@ -560,46 +560,12 @@ export default class EditorToolbar extends Component {
       }
       return;
     }
-
-    let origSelection = selection;
-
-    // Let's just allow one color at a time. Turn off all active colors.
-    let nextContentState = Object.keys(customStyleMap)
-      .reduce((contentState, color) => {
-        return Modifier.removeInlineStyle(contentState, selection, color)
-      }, editorState.getCurrentContent());
-
-    nextContentState = nextContentState.createEntity(isIndent ? 'LINK' : 'SPAN', 'MUTABLE', { className: style });
-
-    let nextEditorState = EditorState.push(
-      editorState,
-      nextContentState,
-      'change-inline-style'
-    );
-
-    const currentStyle = editorState.getCurrentInlineStyle();
-
-    // Unset style override for current color.
-    if (selection.isCollapsed()) {
-      nextEditorState = currentStyle.reduce((state, color) => {
-        return RichUtils.toggleInlineStyle(state, color);
-      }, nextEditorState);
-    }
-
-    // If the color is being toggled on, apply it.
-    if (!currentStyle.has(style)) {
-      nextEditorState = RichUtils.toggleInlineStyle(
-        nextEditorState,
-        style
-      );
-    }
-
+   
+    let nextContentState = contentState.createEntity(isIndent ? 'LINK' : 'SPAN', 'MUTABLE', { className: style });
     let entityKey = nextContentState.getLastCreatedEntityKey();
-    nextEditorState = EditorState.push(nextEditorState, contentState);
-    nextEditorState = RichUtils.toggleLink(nextEditorState, selection, entityKey);
-    nextEditorState = EditorState.acceptSelection(nextEditorState, origSelection);
+    let nextEditorState = RichUtils.toggleLink(editorState, selection, entityKey);
 
-    this.props.onChange(nextEditorState);
+    this.props.onChange(nextEditorState, isIndent);
   };
 
   _selectBlockType() {

@@ -344,7 +344,7 @@ export default class RichTextEditor extends Component {
     }
   }
 
-  _onChange(editorState: EditorState) {
+  _onChange(editorState: EditorState, isIndent?: boolean) {
     let { onChange, value } = this.props;
     if (onChange == null) {
       return;
@@ -356,9 +356,53 @@ export default class RichTextEditor extends Component {
       onChange(createValueFromString(valueString, 'html'));
       return;
     }
+    
+    if (isIndent) {
+      return this._wrappIndents(editorState);
+    }
+
     let newEditorState = newValue.getEditorState();
     this._handleInlineImageSelection(newEditorState);
     onChange(newValue);
+  }
+
+  _wrappIndents(editorState) {
+    let { onChange, value } = this.props;
+    let newValue = value.setEditorState(editorState);
+    let valueString = newValue.toString('html');
+
+    const commonMatch = valueString.match(window.commonRegex);
+    const endMatch = valueString.match(window.commonRegexEnd);
+    const startMatch = valueString.match(window.commonRegexStart);
+    
+    const isMatched = commonMatch || endMatch || startMatch;
+
+    if (!isMatched) {
+      return onChange(newValue);
+    }
+    commonMatch && commonMatch.forEach((value) => {
+      valueString = valueString.replace(value, `</p>\n<p>${value.trim()}</p>\n<p>`)
+    });
+    endMatch && endMatch.forEach((value) => {
+      valueString = valueString.replace(value, `</p>\n<p>${value.trim()}`)
+    });
+    startMatch && startMatch.forEach((value) => {
+      valueString = valueString.replace(value, `${value.trim()}</p>\n<p>`)
+    });
+    onChange(createValueFromString(valueString, 'html', {
+      customInlineFn(elem, { Entity }) {
+        const { className } = elem;
+        if (className === 'text-indent') {
+          return Entity('LINK', { className });
+        }
+        if (className === 'text-outdent') {
+          return Entity('SPAN');
+        }
+      }
+    }));
+    setTimeout(() => {
+      this.editor.focus();
+    });
   }
 
   _handleInlineImageSelection(editorState: EditorState) {
@@ -446,3 +490,4 @@ export {
   UNIQUE_PARAGRAPH,
   editOnPaste,
 };
+

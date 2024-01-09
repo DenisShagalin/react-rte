@@ -7,6 +7,11 @@
     <link rel="icon" type="image/x-icon" href="/react.ico" />
     <link rel="stylesheet" href="/css/demo.css" />
     <script src="/dist/demo.js"></script>
+    <script>
+      var commonRegex = /(?<!<p>|<p id=".*">)(<a class="text-indent">.*<\/a>)(?!<\/p>)/gm;
+      var commonRegexEnd = /(?<!<p>|<p id=".*">)<a class="text-indent">.*<\/a><\/p>/gm;
+      var commonRegexStart = /(<p>|<p id=".*">)(<a class="text-indent">.*<\/a>)(?!<\/p>)/gm;
+    </script>
   </head>
   <body></body>
 </html>

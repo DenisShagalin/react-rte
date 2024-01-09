@@ -56,17 +56,19 @@ export default class EditorDemo extends Component {
     super(...arguments);
     autobind(this);
     this.state = {
-      value: createValueFromString('<p>test <a class="red-dropdown_option" url="" href="">asd asd</a><a class="green-dropdown_option" url="" href="">tttt</a></p>', 'html', {
+      value: createValueFromString('<p>111 222 333 444</p>', 'html', {
         customInlineFn(elem, { Entity }) {
           const { tagName, className } = elem;
           if (tagName === 'A' && colorStyleMap[className]) {
             return Entity('LINK', { className });
           }
+          if (className === 'text-outdent') {
+            return Entity('SPAN');
+          }
         }
       }),
       format: 'html',
       readOnly: false,
-      value2: createEmptyValue()
     };
   }
 
@@ -74,12 +76,8 @@ export default class EditorDemo extends Component {
     this.setState({ value })
   };
 
-  onChange2 = (value) => {
-    this.setState({ value2: value })
-  };
-
   render() {
-    let { value, format, value2 } = this.state;
+    let { value, format } = this.state;
 
     return (
       <div className="editor-demo">
@@ -98,18 +96,9 @@ export default class EditorDemo extends Component {
             blockStyleFn={getTextAlignClassName}
             toolbarConfig={toolbarConfig}
             customStyleMap={colorStyleMap}
-          />
-           <RichTextEditor
-            value={value2}
-            onChange={this.onChange2}
-            className="react-rte-demo"
-            placeholder="Tell a story"
-            toolbarClassName="demo-toolbar"
-            editorClassName="demo-editor"
-            readOnly={this.state.readOnly}
-            blockStyleFn={getTextAlignClassName}
-            toolbarConfig={toolbarConfig}
-            customStyleMap={colorStyleMap}
+            onBlur={() => {
+              console.log('here')
+            }}
           />
         </div>
         <div className="row">
@@ -218,5 +207,6 @@ const colorStyleMap = {
     backgroundColor: 'rgba(255, 127, 0, 1.0)',
     textDecoration: 'unset',
     color: '#FFFF'
-  }
+  },
+  'text-indent': {}
 };
