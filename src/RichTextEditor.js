@@ -315,8 +315,14 @@ export default class RichTextEditor extends Component {
 
   _insertPoint(isKeyHandler = false) {
     const editorState = this.props.value.getEditorState();
-    const currentContent = editorState.getCurrentContent();
-    const selection = editorState.getSelection();
+    let currentContent = editorState.getCurrentContent();
+    let selection = editorState.getSelection();
+
+    if (!selection.isCollapsed()) {
+      currentContent = Modifier.removeRange(currentContent, selection, 'forward');
+      selection = currentContent.getSelectionAfter();
+    }
+
     const entityKey = Entity.create(
       'LINK', 'MUTABLE', { className: 'orange_insert-point' }
     );

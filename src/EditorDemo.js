@@ -10,6 +10,7 @@ import type { EditorValue } from './RichTextEditor';
 type Props = {};
 type State = {
   value: EditorValue;
+  value2: EditorValue;
   format: string;
   readOnly: boolean;
 };
@@ -67,6 +68,17 @@ export default class EditorDemo extends Component {
           }
         }
       }),
+      value2: createValueFromString('<p>111 222 333 444</p>', 'html', {
+        customInlineFn(elem, { Entity }) {
+          const { tagName, className } = elem;
+          if (tagName === 'A' && colorStyleMap[className]) {
+            return Entity('LINK', { className });
+          }
+          if (className === 'text-outdent') {
+            return Entity('SPAN');
+          }
+        }
+      }),
       format: 'html',
       readOnly: false,
     };
@@ -76,8 +88,12 @@ export default class EditorDemo extends Component {
     this.setState({ value })
   };
 
+  onChange2 = (value2) => {
+    this.setState({ value2 })
+  };
+
   render() {
-    let { value, format } = this.state;
+    let { value, format, value2 } = this.state;
 
     return (
       <div className="editor-demo">
@@ -98,6 +114,22 @@ export default class EditorDemo extends Component {
             customStyleMap={colorStyleMap}
             onBlur={() => {
               console.log('here')
+            }}
+          />
+           <RichTextEditor
+            value={value2}
+            onChange={this.onChange2}
+            className="react-rte-demo"
+            placeholder="Tell a story"
+            toolbarClassName="demo-toolbar"
+            editorClassName="demo-editor"
+            readOnly={this.state.readOnly}
+            blockStyleFn={getTextAlignClassName}
+            toolbarConfig={toolbarConfig}
+            customStyleMap={colorStyleMap}
+            onBlur={() => {
+              console.log('here')
+              console.log(value2.toString('html'))
             }}
           />
         </div>
