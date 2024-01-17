@@ -483,44 +483,21 @@ export default class EditorToolbar extends Component {
   }
 
   toggleColor = (isSelection) => () => {
-    const toggledColor = isSelection ? 'yellow-dropdown_option' : 'default-dropdown_option';
+    const toggledColor = isSelection ? 'yellow-dropdown_option' : '';
 
-    let { editorState, customStyleMap } = this.props;
+    let { editorState } = this.props;
     let selection = editorState.getSelection();
     let contentState = editorState.getCurrentContent();
 
     let origSelection = selection;
 
-    // Let's just allow one color at a time. Turn off all active colors.
-    let nextContentState = Object.keys(customStyleMap)
-      .reduce((contentState, color) => {
-        return Modifier.removeInlineStyle(contentState, selection, color)
-      }, editorState.getCurrentContent());
-
-    nextContentState = nextContentState.createEntity('LINK', 'MUTABLE', { className: toggledColor });
+    let nextContentState = editorState.getCurrentContent().createEntity(isSelection ? 'LINK' : 'SPAN', 'MUTABLE', { className: toggledColor });
 
     let nextEditorState = EditorState.push(
       editorState,
       nextContentState,
       'change-inline-style'
     );
-
-    const currentStyle = editorState.getCurrentInlineStyle();
-
-    // Unset style override for current color.
-    if (selection.isCollapsed()) {
-      nextEditorState = currentStyle.reduce((state, color) => {
-        return RichUtils.toggleInlineStyle(state, color);
-      }, nextEditorState);
-    }
-
-    // If the color is being toggled on, apply it.
-    if (!currentStyle.has(toggledColor)) {
-      nextEditorState = RichUtils.toggleInlineStyle(
-        nextEditorState,
-        toggledColor
-      );
-    }
 
     let entityKey = nextContentState.getLastCreatedEntityKey();
     nextEditorState = EditorState.push(nextEditorState, contentState);
