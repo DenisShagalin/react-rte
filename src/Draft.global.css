@@ -291,6 +291,11 @@
   counter-reset: ol4;
 }
 
+.public-fixed-width {
+  color: unset;
+  text-decoration: unset;
+  display: inline-block;
+}
 .red-dropdown_option {
   color: rgba(255, 0, 0, 1.0);
   text-decoration: unset;

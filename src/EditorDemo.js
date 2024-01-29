@@ -57,11 +57,14 @@ export default class EditorDemo extends Component {
     super(...arguments);
     autobind(this);
     this.state = {
-      value: createValueFromString('<p>111 222 333 444</p>', 'html', {
+      value: createValueFromString('<p>111 222 333 <a class="fixed-width-test">bla blaa</a> 444</p>', 'html', {
         customInlineFn(elem, { Entity }) {
           const { tagName, className } = elem;
           if (tagName === 'A' && colorStyleMap[className]) {
             return Entity('LINK', { className });
+          }
+          if (className.startsWith('fixed-width')) {
+            return Entity('LINK', { className: className + ' public-fixed-width' });
           }
           if (className === 'text-outdent') {
             return Entity('SPAN');
