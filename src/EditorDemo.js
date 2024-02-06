@@ -44,7 +44,8 @@ const toolbarConfig = {
     remove: () => <span>remove yellow</span>,
     insert: () => <span>insert</span>,
     indent: () => <span>indent</span>,
-    outdent: () => <span>outdent</span>
+    outdent: () => <span>outdent</span>,
+    symbols: () => <span>symbols</span>
   },
   extraProps: {}
 };
@@ -57,7 +58,7 @@ export default class EditorDemo extends Component {
     super(...arguments);
     autobind(this);
     this.state = {
-      value: createValueFromString('<p>111 222 333 <a class="fixed-width-test">bla blaa</a> 444</p>', 'html', {
+      value: createValueFromString('<p>111 222 333 444</p>', 'html', {
         customInlineFn(elem, { Entity }) {
           const { tagName, className } = elem;
           if (tagName === 'A' && colorStyleMap[className]) {
@@ -65,17 +66,6 @@ export default class EditorDemo extends Component {
           }
           if (className.startsWith('fixed-width')) {
             return Entity('LINK', { className: className + ' public-fixed-width' });
-          }
-          if (className === 'text-outdent') {
-            return Entity('SPAN');
-          }
-        }
-      }),
-      value2: createValueFromString('<p>111 222 333 444</p>', 'html', {
-        customInlineFn(elem, { Entity }) {
-          const { tagName, className } = elem;
-          if (tagName === 'A' && colorStyleMap[className]) {
-            return Entity('LINK', { className });
           }
           if (className === 'text-outdent') {
             return Entity('SPAN');
@@ -91,12 +81,8 @@ export default class EditorDemo extends Component {
     this.setState({ value })
   };
 
-  onChange2 = (value2) => {
-    this.setState({ value2 })
-  };
-
   render() {
-    let { value, format, value2 } = this.state;
+    let { value, format } = this.state;
 
     return (
       <div className="editor-demo">
@@ -117,22 +103,6 @@ export default class EditorDemo extends Component {
             customStyleMap={colorStyleMap}
             onBlur={() => {
               console.log('here')
-            }}
-          />
-           <RichTextEditor
-            value={value2}
-            onChange={this.onChange2}
-            className="react-rte-demo"
-            placeholder="Tell a story"
-            toolbarClassName="demo-toolbar"
-            editorClassName="demo-editor"
-            readOnly={this.state.readOnly}
-            blockStyleFn={getTextAlignClassName}
-            toolbarConfig={toolbarConfig}
-            customStyleMap={colorStyleMap}
-            onBlur={() => {
-              console.log('here')
-              console.log(value2.toString('html'))
             }}
           />
         </div>

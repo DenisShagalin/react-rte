@@ -228,6 +228,11 @@ export default class EditorToolbar extends Component {
             {toolbarConfig.EXTRA_OPTIONS.insert()}
           </button>
         )}
+        {toolbarConfig.EXTRA_OPTIONS.symbols && (
+          <button onClick={this.props.onSymbols} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.symbols()}
+          </button>
+        )}
       </ButtonGroup>
     );
   }
