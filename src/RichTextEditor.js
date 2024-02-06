@@ -79,6 +79,9 @@ export default class RichTextEditor extends Component {
   constructor() {
     super(...arguments);
     this._keyEmitter = new EventEmitter();
+    this.state = {
+      lastSelection: null,
+    };
     autobind(this);
   }
 
@@ -317,12 +320,7 @@ export default class RichTextEditor extends Component {
   _insertSymbol(symbol) {
     const editorState = this.props.value.getEditorState();
     let currentContent = editorState.getCurrentContent();
-    let selection = editorState.getSelection();
-
-    if (!selection.isCollapsed()) {
-      currentContent = Modifier.removeRange(currentContent, selection, 'forward');
-      selection = currentContent.getSelectionAfter();
-    }
+    const selection = this.state.lastSelection;
 
     const entityKey = Entity.create('SPAN', 'MUTABLE');
     const textWithEntity = Modifier.insertText(
@@ -338,7 +336,20 @@ export default class RichTextEditor extends Component {
   };
 
   _onSymbols() {
-    this.props.onSymbols && this.props.onSymbols(this._insertSymbol);
+    const editorState = this.props.value.getEditorState();
+    let currentContent = editorState.getCurrentContent();
+    let selection = editorState.getSelection();
+
+    if (!selection.isCollapsed()) {
+      currentContent = Modifier.removeRange(currentContent, selection, 'forward');
+      selection = currentContent.getSelectionAfter();
+    }
+
+    this.setState({
+      lastSelection: selection
+    }, () => {
+      this.props.onSymbols && this.props.onSymbols(this._insertSymbol);
+    });
   }
 
   _insertPoint(isKeyHandler = false) {
