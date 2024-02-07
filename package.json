@@ -1,6 +1,6 @@
 {
   "name": "ds-react-rte",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "description": "React Rich Text Editor",
   "main": "dist/react-rte.js",
   "files": [
@@ -19,6 +19,7 @@
     "test-src": "BABEL_ENV=test mocha \"src/**/__tests__/*.js\""
   },
   "dependencies": {
+    "@material-ui/core": "^3.9.4",
     "babel-runtime": "^6.23.0",
     "class-autobind": "^0.1.4",
     "classnames": "^2.2.5",

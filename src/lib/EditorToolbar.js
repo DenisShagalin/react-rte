@@ -4,6 +4,8 @@ import { hasCommandModifier } from 'draft-js/lib/KeyBindingUtil';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { EditorState, Entity, EntityDescription, RichUtils, Modifier } from 'draft-js';
+import Popover from '@material-ui/core/Popover';
+import Paper from '@material-ui/core/Paper';
 import { ENTITY_TYPE } from 'draft-js-utils';
 import DefaultToolbarConfig from './EditorToolbarConfig';
 import StyleButton from './StyleButton';
@@ -54,6 +56,9 @@ export default class EditorToolbar extends Component {
       showLinkInput: false,
       showImageInput: false,
       customControlState: {},
+      anchorElement: null,
+      lastFocusOffset: null,
+      lastFocusKey: null,
       color: 'default-dropdown_option'
     };
   }
@@ -200,7 +205,41 @@ export default class EditorToolbar extends Component {
     );
   }
 
+  _onSymbolClick(event) {
+    const { editorState } = this.props;
+    const selectionState = editorState.getSelection();
+    const lastFocusKey = selectionState.getFocusKey();
+    const lastFocusOffset = selectionState.getStartOffset();
+    this.setState({
+      anchorElement: event.currentTarget,
+      lastFocusOffset,
+      lastFocusKey,
+    });
+  }
+
+  _onSymbolsPopoverClose() {
+    const { editorState } = this.props;
+    this.setState({
+      anchorElement: null
+    });
+    const selectionState = editorState.getSelection();
+    const newSelectionState = selectionState.merge({
+      focusOffset: this.state.lastFocusOffset + 1,
+      focusKey: this.state.lastFocusKey,
+    });
+    this.props.onChange(EditorState.forceSelection(editorState, newSelectionState));
+  }
+
+  _insertSymbol(symbol) {
+    this.props.insertSymbol(symbol);
+    setTimeout(() => {
+      this._onSymbolsPopoverClose();
+    });
+  }
+
   _extraOptions(name: String, toolbarConfig: ToolbarConfig) {
+    const open = Boolean(this.state.anchorElement);
+    const id = open ? 'symbols-popover' : undefined;
     return (
       <ButtonGroup key={name}>
         {toolbarConfig.EXTRA_OPTIONS.add && (
@@ -228,11 +267,35 @@ export default class EditorToolbar extends Component {
             {toolbarConfig.EXTRA_OPTIONS.insert()}
           </button>
         )}
-        {toolbarConfig.EXTRA_OPTIONS.symbols && (
-          <button onClick={this.props.onSymbols} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.symbols()}
-          </button>
-        )}
+        {this.props.symbols && this.props.symbols.length ? (
+          <React.Fragment>
+            <button id={id} onClick={this._onSymbolClick} onMouseDown={(e) => e.preventDefault()} className='symbols_button'>
+              <i className="material-icons">&#xe8e2;</i>
+            </button>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={this.state.anchorElement}
+              onClose={this._onSymbolsPopoverClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+            >
+              <Paper className={cx(styles.symbolsPopover)}>
+                {this.props.symbols.map((symbol, idx) => (
+                  <div
+                    key={idx}
+                    className={cx(styles.symbolsPopoverItem)}
+                    onClick={() => this._insertSymbol(symbol)}
+                  >
+                    {symbol}
+                  </div>
+                ))}
+              </Paper>
+            </Popover>
+          </React.Fragment>
+        ) : null}
       </ButtonGroup>
     );
   }
@@ -542,7 +605,7 @@ export default class EditorToolbar extends Component {
       }
       return;
     }
-   
+
     let nextContentState = contentState.createEntity(isIndent ? 'LINK' : 'SPAN', 'MUTABLE', { className: style });
     let entityKey = nextContentState.getLastCreatedEntityKey();
     let nextEditorState = RichUtils.toggleLink(editorState, selection, entityKey);

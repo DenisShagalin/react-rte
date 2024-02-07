@@ -45,7 +45,6 @@ const toolbarConfig = {
     insert: () => <span>insert</span>,
     indent: () => <span>indent</span>,
     outdent: () => <span>outdent</span>,
-    symbols: () => <span>symbols</span>
   },
   extraProps: {}
 };

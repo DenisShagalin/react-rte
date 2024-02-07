@@ -79,9 +79,6 @@ export default class RichTextEditor extends Component {
   constructor() {
     super(...arguments);
     this._keyEmitter = new EventEmitter();
-    this.state = {
-      lastSelection: null,
-    };
     autobind(this);
   }
 
@@ -140,11 +137,12 @@ export default class RichTextEditor extends Component {
           editorState={editorState}
           onChange={this._onChange}
           onInsert={this._insertPoint}
-          onSymbols={this._onSymbols}
+          insertSymbol={this._insertSymbol}
           focusEditor={this._focus}
           toolbarConfig={toolbarConfig}
           customControls={customControls}
           customStyleMap={customStyleMap}
+          symbols={this.props.symbols}
         />
       );
     }
@@ -320,7 +318,12 @@ export default class RichTextEditor extends Component {
   _insertSymbol(symbol) {
     const editorState = this.props.value.getEditorState();
     let currentContent = editorState.getCurrentContent();
-    const selection = this.state.lastSelection;
+    let selection = editorState.getSelection();
+
+    if (!selection.isCollapsed()) {
+      currentContent = Modifier.removeRange(currentContent, selection, 'forward');
+      selection = currentContent.getSelectionAfter();
+    }
 
     const entityKey = Entity.create('SPAN', 'MUTABLE');
     const textWithEntity = Modifier.insertText(
@@ -334,23 +337,6 @@ export default class RichTextEditor extends Component {
     const newEditorState = EditorState.push(editorState, textWithEntity, 'insert-characters');
     this._onChange(newEditorState);
   };
-
-  _onSymbols() {
-    const editorState = this.props.value.getEditorState();
-    let currentContent = editorState.getCurrentContent();
-    let selection = editorState.getSelection();
-
-    if (!selection.isCollapsed()) {
-      currentContent = Modifier.removeRange(currentContent, selection, 'forward');
-      selection = currentContent.getSelectionAfter();
-    }
-
-    this.setState({
-      lastSelection: selection
-    }, () => {
-      this.props.onSymbols && this.props.onSymbols(this._insertSymbol);
-    });
-  }
 
   _insertPoint(isKeyHandler = false) {
     const editorState = this.props.value.getEditorState();
@@ -401,7 +387,7 @@ export default class RichTextEditor extends Component {
       onChange(createValueFromString(valueString, 'html'));
       return;
     }
-    
+
     if (isIndent) {
       return this._wrappIndents(editorState);
     }
@@ -419,7 +405,7 @@ export default class RichTextEditor extends Component {
     const commonMatch = valueString.match(window.commonRegex);
     const endMatch = valueString.match(window.commonRegexEnd);
     const startMatch = valueString.match(window.commonRegexStart);
-    
+
     const isMatched = commonMatch || endMatch || startMatch;
 
     if (!isMatched) {
