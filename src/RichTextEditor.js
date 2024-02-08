@@ -80,6 +80,11 @@ export default class RichTextEditor extends Component {
     super(...arguments);
     this._keyEmitter = new EventEmitter();
     autobind(this);
+    this.state = {
+      isOpen: false,
+      lastFocusOffset: null,
+      lastFocusKey: null,
+    };
   }
 
   componentDidMount() {
@@ -90,6 +95,34 @@ export default class RichTextEditor extends Component {
     }
 
     this._focus();
+  }
+
+  _onSymbolClick() {
+    let editorState = this.props.value.getEditorState();
+    const selectionState = editorState.getSelection();
+    const lastFocusKey = selectionState.getFocusKey();
+    const lastFocusOffset = selectionState.getStartOffset();
+    this.setState({
+      isOpen: true,
+      lastFocusOffset,
+      lastFocusKey,
+    });
+  }
+
+  _onSymbolsPopoverClose(isManualClose) {
+    let editorState = this.props.value.getEditorState();
+    this.setState({
+      isOpen: false
+    });
+    if (isManualClose) {
+      return;
+    }
+    const selectionState = editorState.getSelection();
+    const newSelectionState = selectionState.merge({
+      focusOffset: this.state.lastFocusOffset + 1,
+      focusKey: this.state.lastFocusKey,
+    });
+    this._onChange(EditorState.forceSelection(editorState, newSelectionState));
   }
 
   render() {
@@ -143,6 +176,10 @@ export default class RichTextEditor extends Component {
           customControls={customControls}
           customStyleMap={customStyleMap}
           symbols={this.props.symbols}
+          onSymbolClick={this._onSymbolClick}
+          onSymbolsPopoverClose={this._onSymbolsPopoverClose}
+          customRenderer={this.props.customRenderer}
+          isOpen={this.state.isOpen}
         />
       );
     }
@@ -169,6 +206,11 @@ export default class RichTextEditor extends Component {
             readOnly={readOnly}
             onPaste={otherProps.onPaste ? otherProps.onPaste : (editor, e) => {
               editOnPaste(editor, e);
+            }}
+            onBlur={() => {
+              if (!this.state.isOpen) {
+                this.props.onBlur();
+              }
             }}
           />
         </div>
@@ -336,6 +378,10 @@ export default class RichTextEditor extends Component {
 
     const newEditorState = EditorState.push(editorState, textWithEntity, 'insert-characters');
     this._onChange(newEditorState);
+
+    setTimeout(() => {
+      this._onSymbolsPopoverClose();
+    });
   };
 
   _insertPoint(isKeyHandler = false) {

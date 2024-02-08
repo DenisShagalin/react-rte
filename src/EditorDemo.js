@@ -50,11 +50,8 @@ const toolbarConfig = {
 };
 
 export default class EditorDemo extends Component {
-  props: Props;
-  state: State;
-
-  constructor() {
-    super(...arguments);
+  constructor(props) {
+    super(props);
     autobind(this);
     this.state = {
       value: createValueFromString('<p>111 222 333 444</p>', 'html', {
@@ -73,6 +70,7 @@ export default class EditorDemo extends Component {
       }),
       format: 'html',
       readOnly: false,
+      isOpen: false
     };
   }
 
@@ -94,13 +92,21 @@ export default class EditorDemo extends Component {
             onChange={this.onChange}
             className="react-rte-demo"
             placeholder="Tell a story"
-            toolbarClassName="demo-toolbar"
+            toolbarClassName={this.state.isOpen ? '' : 'demo-toolbar'}
             editorClassName="demo-editor"
             readOnly={this.state.readOnly}
             blockStyleFn={getTextAlignClassName}
             toolbarConfig={toolbarConfig}
             customStyleMap={colorStyleMap}
+            onFocus={() => {
+              this.setState({
+                isOpen: true
+              })
+            }}
             onBlur={() => {
+              this.setState({
+                isOpen: false
+              })
               console.log('here')
             }}
           />

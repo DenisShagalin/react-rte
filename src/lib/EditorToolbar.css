@@ -14,20 +14,3 @@
   border-top: 1px solid #ddd;
   border-bottom: none;
 }
-
-.symbolsPopover {
-  padding: 10px;
-  width: 210px;
-  display: flex;
-  flex-flow: wrap;
-}
-.symbolsPopoverItem {
-  width: 30px;
-  height: 26px;
-  text-align: center;
-  cursor: pointer;
-  padding: 2px;
-}
-.symbolsPopoverItem:hover {
-  background-color: rgb(232, 231, 231);
-}
