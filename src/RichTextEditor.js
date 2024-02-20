@@ -31,6 +31,7 @@ import type { ImportOptions } from './lib/EditorValue';
 import ButtonGroup from './ui/ButtonGroup';
 import Button from './ui/Button';
 import Dropdown from './ui/Dropdown';
+import { hasCommandModifier } from 'draft-js/lib/KeyBindingUtil';
 
 const MAX_LIST_DEPTH = 2;
 
@@ -170,6 +171,7 @@ export default class RichTextEditor extends Component {
           editorState={editorState}
           onChange={this._onChange}
           onInsert={this._insertPoint}
+          onToggleColor={this._toggleColor}
           insertSymbol={this._insertSymbol}
           focusEditor={this._focus}
           toolbarConfig={toolbarConfig}
@@ -334,13 +336,29 @@ export default class RichTextEditor extends Component {
     let eventFlags = {};
     this._keyEmitter.emit('keypress', event, eventFlags);
 
-    // insert point for replace
-    if (event.keyCode === 115) {
+    let keyCommand = getDefaultKeyBinding(event);
+
+    // F4 - insert point for replace
+    if (!keyCommand && event.keyCode === 115) {
       event.preventDefault();
       this._insertPoint(true);
     }
-
-    const keyCommand = getDefaultKeyBinding(event);
+    // F8 - highlight selected text
+    if (!keyCommand && event.keyCode === 119) {
+      event.preventDefault();
+      this._toggleColor(true)();
+      return;
+    }
+    // F9 - remove highlight from selected text
+    if (!keyCommand && event.keyCode === 120) {
+      event.preventDefault();
+      this._toggleColor()();
+      return;
+    }
+    // Ctrl + K - additional hotkey for italic format
+    if (hasCommandModifier(event) && event.keyCode === 75) {
+      keyCommand = 'italic';
+    }
 
     if (['bold', 'italic', 'underline'].includes(keyCommand)) {
       const editorState = this.props.value.getEditorState();
@@ -355,6 +373,27 @@ export default class RichTextEditor extends Component {
     } else {
       return keyCommand;
     }
+  }
+
+  _toggleColor = (isSelection) => () => {
+    const toggledColor = isSelection ? 'yellow-dropdown_option' : '';
+    const editorState = this.props.value.getEditorState();
+    let selection = editorState.getSelection();
+    let contentState = editorState.getCurrentContent();
+    let origSelection = selection;
+    let nextContentState = editorState.getCurrentContent().createEntity(isSelection ? 'LINK' : 'SPAN', 'MUTABLE', { className: toggledColor });
+    let nextEditorState = EditorState.push(
+      editorState,
+      nextContentState,
+      'change-inline-style'
+    );
+
+    let entityKey = nextContentState.getLastCreatedEntityKey();
+    nextEditorState = EditorState.push(nextEditorState, contentState);
+    nextEditorState = RichUtils.toggleLink(nextEditorState, selection, entityKey);
+    nextEditorState = EditorState.acceptSelection(nextEditorState, origSelection);
+
+    this._onChange(nextEditorState);
   }
 
   _insertSymbol(symbol) {

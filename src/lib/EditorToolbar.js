@@ -54,7 +54,6 @@ export default class EditorToolbar extends Component {
       showLinkInput: false,
       showImageInput: false,
       customControlState: {},
-      color: 'default-dropdown_option'
     };
   }
 
@@ -204,12 +203,12 @@ export default class EditorToolbar extends Component {
     return (
       <ButtonGroup key={name}>
         {toolbarConfig.EXTRA_OPTIONS.add && (
-          <button onClick={this.toggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
+          <button onClick={this.props.onToggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
             {toolbarConfig.EXTRA_OPTIONS.add()}
           </button>
         )}
         {toolbarConfig.EXTRA_OPTIONS.remove && (
-          <button onClick={this.toggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
+          <button onClick={this.props.onToggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
             {toolbarConfig.EXTRA_OPTIONS.remove()}
           </button>
         )}
@@ -490,32 +489,6 @@ export default class EditorToolbar extends Component {
       .getCurrentContent()
       .getBlockForKey(selection.getStartKey())
       .getType();
-  }
-
-  toggleColor = (isSelection) => () => {
-    const toggledColor = isSelection ? 'yellow-dropdown_option' : '';
-
-    let { editorState } = this.props;
-    let selection = editorState.getSelection();
-    let contentState = editorState.getCurrentContent();
-
-    let origSelection = selection;
-
-    let nextContentState = editorState.getCurrentContent().createEntity(isSelection ? 'LINK' : 'SPAN', 'MUTABLE', { className: toggledColor });
-
-    let nextEditorState = EditorState.push(
-      editorState,
-      nextContentState,
-      'change-inline-style'
-    );
-
-    let entityKey = nextContentState.getLastCreatedEntityKey();
-    nextEditorState = EditorState.push(nextEditorState, contentState);
-    nextEditorState = RichUtils.toggleLink(nextEditorState, selection, entityKey);
-    nextEditorState = EditorState.acceptSelection(nextEditorState, origSelection);
-
-    this.setState({ color: toggledColor });
-    this.props.onChange(nextEditorState);
   }
 
   indent = (isIndent) => () => {
