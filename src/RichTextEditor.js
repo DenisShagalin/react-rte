@@ -207,7 +207,7 @@ export default class RichTextEditor extends Component {
             spellCheck={true}
             readOnly={readOnly}
             onPaste={otherProps.onPaste ? otherProps.onPaste : (editor, e) => {
-              editOnPaste(editor, e);
+              editOnPaste(editor, e, this.props.onPasteValidation);
             }}
             onBlur={() => {
               if (!this.state.isOpen) {

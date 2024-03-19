@@ -6,6 +6,7 @@ import BlockMapBuilder from 'draft-js/lib/BlockMapBuilder';
 import CharacterMetadata from 'draft-js/lib/CharacterMetadata';
 import getEntityKeyForSelection from 'draft-js/lib/getEntityKeyForSelection';
 import DataTransfer from 'fbjs/lib/DataTransfer';
+import { stateToHTML } from 'draft-js-export-html';
 
 export const UNIQUE_PARAGRAPH = '<p>__unique_draftjs_empty_paragraph</p>';
 export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</span>';
@@ -32,7 +33,12 @@ function areTextBlocksAndClipboardEqual(textBlocks, blockMap) {
   });
 };
 
-export const editOnPaste = (editor, e) => {
+const isNotValidHTML = (HTML) => {
+  console.log(HTML)
+  return true;
+};
+
+export const editOnPaste = (editor, e, onPasteValidation) => {
   e.preventDefault();
   const data = new DataTransfer(e.clipboardData);
 
@@ -57,7 +63,11 @@ export const editOnPaste = (editor, e) => {
       if (
         html.indexOf(editor.getEditorKey()) !== -1 ||
         textBlocks.length === 1 && internalClipboard.size === 1 && internalClipboard.first().getText() === text) {
-        editor.update(insertFragment(editor._latestEditorState, internalClipboard));
+        const newState = insertFragment(editor._latestEditorState, internalClipboard);
+        const pastedHTML = stateToHTML(newState.getCurrentContent());
+        if (onPasteValidation && onPasteValidation(pastedHTML)) {
+          editor.update(newState);
+        }
         return;
       }
     } else if (internalClipboard && data.types.includes('com.apple.webarchive') && !data.types.includes('text/html') && areTextBlocksAndClipboardEqual(textBlocks, internalClipboard)) {
@@ -70,10 +80,13 @@ export const editOnPaste = (editor, e) => {
       if (htmlFragment) {
         var contentBlocks = htmlFragment.contentBlocks;
         var entityMap = htmlFragment.entityMap;
-
         if (contentBlocks) {
           var htmlMap = BlockMapBuilder.createFromArray(contentBlocks);
-          editor.update(insertFragment(editor._latestEditorState, htmlMap, entityMap));
+          const newState = insertFragment(editor._latestEditorState, htmlMap, entityMap);
+          const pastedHTML = stateToHTML(newState.getCurrentContent());
+          if (onPasteValidation && onPasteValidation(pastedHTML)) {
+            editor.update(newState);
+          }
           return;
         }
       }

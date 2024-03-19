@@ -1,19 +1,9 @@
 /* @flow */
 import React, { Component } from 'react';
-import RichTextEditor, { createValueFromString, createEmptyValue } from './RichTextEditor';
+import RichTextEditor, { createValueFromString } from './RichTextEditor';
 import { convertToRaw } from 'draft-js';
 import autobind from 'class-autobind';
 import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
-
-import type { EditorValue } from './RichTextEditor';
-
-type Props = {};
-type State = {
-  value: EditorValue;
-  value2: EditorValue;
-  format: string;
-  readOnly: boolean;
-};
 
 const toolbarConfig = {
   // Optionally specify the groups to display (displayed in the order listed).
@@ -32,12 +22,6 @@ const toolbarConfig = {
   BLOCK_TYPE_BUTTONS: [
     { label: 'UL', style: 'unordered-list-item' },
     { label: 'OL', style: 'ordered-list-item' }
-  ],
-  TEST_BUTTONS: [
-    {
-      label: 'test',
-      style: 'TEST'
-    }
   ],
   EXTRA_OPTIONS: {
     add: () => <span>add yellow</span>,
