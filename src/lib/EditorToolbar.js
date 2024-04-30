@@ -55,6 +55,9 @@ export default class EditorToolbar extends Component {
       showImageInput: false,
       customControlState: {},
     };
+    this.buttonRef = React.createRef();
+    this.blockTypeRef = React.createRef();
+    this.inlineTypeRef = React.createRef();
   }
 
   // eslint-disable-next-line
@@ -165,7 +168,7 @@ export default class EditorToolbar extends Component {
   _renderBlockTypeButtons(name: string, toolbarConfig: ToolbarConfig) {
     let blockType = this._getCurrentBlockType();
     let buttons = (toolbarConfig.BLOCK_TYPE_BUTTONS || []).map((type, index) => (
-      <StyleButton
+      this.props.tooltipRenderer ? this.props.tooltipRenderer(<StyleButton
         {...toolbarConfig.extraProps}
         key={String(index)}
         isActive={type.style === blockType}
@@ -173,10 +176,19 @@ export default class EditorToolbar extends Component {
         onToggle={this._toggleBlockType}
         style={type.style}
         className={type.className}
-      />
+      />, this.blockTypeRef, type) :
+        <StyleButton
+          {...toolbarConfig.extraProps}
+          key={String(index)}
+          isActive={type.style === blockType}
+          label={type.label}
+          onToggle={this._toggleBlockType}
+          style={type.style}
+          className={type.className}
+        />
     ));
     return (
-      <ButtonGroup key={name}>{buttons}</ButtonGroup>
+      <ButtonGroup key={name} innerRef={this.blockTypeRef}>{buttons}</ButtonGroup>
     );
   }
 
@@ -184,7 +196,7 @@ export default class EditorToolbar extends Component {
     let { editorState } = this.props;
     let currentStyle = editorState.getCurrentInlineStyle();
     let buttons = (toolbarConfig.INLINE_STYLE_BUTTONS || []).map((type, index) => (
-      <StyleButton
+      this.props.tooltipRenderer ? this.props.tooltipRenderer(<StyleButton
         {...toolbarConfig.extraProps}
         key={String(index)}
         isActive={currentStyle.has(type.style)}
@@ -192,45 +204,55 @@ export default class EditorToolbar extends Component {
         onToggle={this._toggleInlineStyle}
         style={type.style}
         className={type.className}
-      />
+      />, this.inlineTypeRef, type) :
+        <StyleButton
+          {...toolbarConfig.extraProps}
+          key={String(index)}
+          isActive={currentStyle.has(type.style)}
+          label={type.label}
+          onToggle={this._toggleInlineStyle}
+          style={type.style}
+          className={type.className}
+        />
     ));
     return (
-      <ButtonGroup key={name}>{buttons}</ButtonGroup>
+      <ButtonGroup key={name} innerRef={this.inlineTypeRef}>{buttons}</ButtonGroup>
     );
   }
 
   _extraOptions(name: String, toolbarConfig: ToolbarConfig) {
     return (
-      <ButtonGroup key={name}>
+      <ButtonGroup key={name} innerRef={this.buttonRef}>
         {toolbarConfig.EXTRA_OPTIONS.add && (
           <button onClick={this.props.onToggleColor(true)} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.add()}
+            {toolbarConfig.EXTRA_OPTIONS.add(this.buttonRef)}
           </button>
         )}
         {toolbarConfig.EXTRA_OPTIONS.remove && (
           <button onClick={this.props.onToggleColor(false)} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.remove()}
+            {toolbarConfig.EXTRA_OPTIONS.remove(this.buttonRef)}
           </button>
         )}
         {toolbarConfig.EXTRA_OPTIONS.indent && (
           <button onClick={this.indent(true)} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.indent()}
+            {toolbarConfig.EXTRA_OPTIONS.indent(this.buttonRef)}
           </button>
         )}
         {toolbarConfig.EXTRA_OPTIONS.outdent && (
           <button onClick={this.indent(false)} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.outdent()}
+            {toolbarConfig.EXTRA_OPTIONS.outdent(this.buttonRef)}
           </button>
         )}
         {toolbarConfig.EXTRA_OPTIONS.insert && (
           <button onClick={this.props.onInsert} onMouseDown={(e) => e.preventDefault()}>
-            {toolbarConfig.EXTRA_OPTIONS.insert()}
+            {toolbarConfig.EXTRA_OPTIONS.insert(this.buttonRef)}
           </button>
         )}
         {this.props.symbols && this.props.symbols.length && this.props.customRenderer({
           open: this.props.isOpen,
           onClick: this.props.insertSymbol,
           onOpenChange: this.props.onSymbolClick,
+          innerRef: this.buttonRef,
           onButtonClick: () => {
             if (this.props.isOpen) {
               this.props.onSymbolsPopoverClose(true);

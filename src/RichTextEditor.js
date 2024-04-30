@@ -181,6 +181,7 @@ export default class RichTextEditor extends Component {
           onSymbolClick={this._onSymbolClick}
           onSymbolsPopoverClose={this._onSymbolsPopoverClose}
           customRenderer={this.props.customRenderer}
+          tooltipRenderer={this.props.tooltipRenderer}
           isOpen={this.state.isOpen}
         />
       );

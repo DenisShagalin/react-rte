@@ -1,6 +1,6 @@
 {
   "name": "ds-react-rte",
-  "version": "0.3.13",
+  "version": "0.3.15",
   "description": "React Rich Text Editor",
   "main": "dist/react-rte.js",
   "files": [
