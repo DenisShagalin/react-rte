@@ -620,7 +620,7 @@ export default class EditorToolbar extends Component {
   }
 }
 
-const processEndBlockValue = (offset, endBlockValue) => {
+export const processEndBlockValue = (offset, endBlockValue) => {
   let endPosition = offset; // Initialize endPosition with the given offset
 
   if (endBlockValue && endPosition < endBlockValue.length && endBlockValue[endPosition - 1] !== ' ') {
@@ -632,7 +632,7 @@ const processEndBlockValue = (offset, endBlockValue) => {
   return endPosition; // Return the updated endPosition
 };
 
-const processStartBlockValue = (offset, startBlockValue) => {
+export const processStartBlockValue = (offset, startBlockValue) => {
   let startPosition = offset; // Initialize startPosition with the given offset
 
   if (startBlockValue && startPosition > 0 && startBlockValue[startPosition - 1] !== ' ') {

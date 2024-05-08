@@ -93,6 +93,10 @@ export default class EditorDemo extends Component {
               })
               console.log('here')
             }}
+            syncInsertRequest={(value) => {
+              console.log(value, 'VALUE for API');
+              return 'API_VALUE'
+            }}
           />
         </div>
         <div className="row">

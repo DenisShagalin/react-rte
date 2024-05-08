@@ -1,6 +1,6 @@
 /* @flow */
 import React, { Component } from 'react';
-import { CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity } from 'draft-js';
+import { CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity, ContentState } from 'draft-js';
 import getDefaultKeyBinding from 'draft-js/lib/getDefaultKeyBinding';
 import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
 import changeBlockDepth from './lib/changeBlockDepth';
@@ -18,6 +18,9 @@ import cx from 'classnames';
 import autobind from 'class-autobind';
 import EventEmitter from 'events';
 import { BLOCK_TYPE } from 'draft-js-utils';
+import htmlToDraft from 'html-to-draftjs';
+
+import { processStartBlockValue, processEndBlockValue } from './lib/EditorToolbar';
 
 import { editOnPaste, EMPTY_PARAGRAPH_MARK, UNIQUE_PARAGRAPH } from './lib/onPasteEdit';
 
@@ -339,10 +342,23 @@ export default class RichTextEditor extends Component {
 
     let keyCommand = getDefaultKeyBinding(event);
 
-    // F4 - insert point for replace
+    // F4+Shift - insert point for replace
+    if (!keyCommand && event.keyCode === 115 && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      this._insertPoint();
+      return;
+    }
+     // F4+Ctrl - call async insert
+    if (!keyCommand && event.keyCode === 115 && !event.shiftKey && event.ctrlKey) {
+      event.preventDefault();
+      this.props.onInsert && this.props.onInsert();
+      return;
+    }
+    // F4 - call sync insert
     if (!keyCommand && event.keyCode === 115) {
       event.preventDefault();
-      this._insertPoint(true);
+      this._syncInsert();
+      return;
     }
     // F8 - highlight selected text
     if (!keyCommand && event.keyCode === 119) {
@@ -424,7 +440,88 @@ export default class RichTextEditor extends Component {
     });
   };
 
-  _insertPoint(isKeyHandler = false) {
+  _insertHTMLByProps({
+    value,
+    anchorOffset,
+    focusOffset,
+  }) {
+    const editorState = this.props.value.getEditorState();
+    const selection = editorState.getSelection();
+    let currentContent = editorState.getCurrentContent();
+
+    const anchorKey = selection.getAnchorKey();
+    const focusKey = selection.getFocusKey();
+    const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
+    const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
+
+    const anchor = processEndBlockValue(anchorOffset, endBlockValue);
+    const focus = processStartBlockValue(focusOffset, startBlockValue);
+
+    let newSelectionState = selection.merge({
+      anchorOffset: anchor,
+      focusOffset: focus,
+      anchorKey: anchorKey,
+      focusKey: focusKey,
+      isBackward: true,
+    });
+
+    if (!newSelectionState.isCollapsed()) {
+      currentContent = Modifier.removeRange(currentContent, newSelectionState, 'forward');
+      newSelectionState = currentContent.getSelectionAfter();
+    }
+
+    const { contentBlocks, entityMap } = htmlToDraft(value);
+    currentContent = Modifier.replaceWithFragment(
+      currentContent,
+      newSelectionState,
+      ContentState.createFromBlockArray(contentBlocks, entityMap).getBlockMap()
+    );
+    this._onChange(EditorState.push(editorState, currentContent, 'insert-fragment'));
+  }
+
+  async _syncInsert() {
+    if (!this.props.syncInsertRequest) {
+      return;
+    }
+
+    const editorState = this.props.value.getEditorState();
+    const selectionState = editorState.getSelection();
+    let anchorKey = selectionState.getAnchorKey();
+    let focusKey = selectionState.getFocusKey();
+    let anchorOffset = selectionState.getEndOffset();
+    let focusOffset = selectionState.getStartOffset();
+
+    let currentContent = editorState.getCurrentContent();
+    const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
+    const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
+
+    focusOffset = processStartBlockValue(focusOffset, startBlockValue);
+    anchorOffset = processEndBlockValue(anchorOffset, endBlockValue);
+
+    if (focusOffset === anchorOffset) {
+      console.log('wrong position of cursor');
+      return null;
+    }
+    const word = startBlockValue.substring(focusOffset, anchorOffset);
+    if (word.trim().includes(' ')) {
+      console.log('wrong ID to send');
+      return;
+    }
+
+    const value = await this.props.syncInsertRequest(word, focusOffset, anchorOffset);
+
+    if (typeof value !== 'string') {
+      return;
+    }
+
+    this._insertHTMLByProps({
+      value,
+      anchorOffset,
+      focusOffset,
+    });
+  }
+
+  _insertPoint() {
     const editorState = this.props.value.getEditorState();
     let currentContent = editorState.getCurrentContent();
     let selection = editorState.getSelection();
@@ -447,7 +544,6 @@ export default class RichTextEditor extends Component {
 
     const newEditorState = EditorState.push(editorState, textWithEntity, 'insert-characters');
     this._onChange(newEditorState);
-    this.props.onInsert && this.props.onInsert(isKeyHandler);
   }
 
   _handleKeyCommand(command: string): boolean {
@@ -607,4 +703,3 @@ export {
   UNIQUE_PARAGRAPH,
   editOnPaste,
 };
-
