@@ -35,6 +35,7 @@ import ButtonGroup from './ui/ButtonGroup';
 import Button from './ui/Button';
 import Dropdown from './ui/Dropdown';
 import { hasCommandModifier } from 'draft-js/lib/KeyBindingUtil';
+import { stateToHTML } from 'draft-js-export-html';
 
 const MAX_LIST_DEPTH = 2;
 
@@ -348,7 +349,7 @@ export default class RichTextEditor extends Component {
       this._insertPoint();
       return;
     }
-     // F4+Ctrl - call async insert
+    // F4+Ctrl - call async insert
     if (!keyCommand && event.keyCode === 115 && !event.shiftKey && event.ctrlKey) {
       event.preventDefault();
       this.props.onInsert && this.props.onInsert();
@@ -444,13 +445,25 @@ export default class RichTextEditor extends Component {
     value,
     anchorOffset,
     focusOffset,
+    anchorKey,
+    focusKey,
   }) {
+    let valueToInsert = value;
+    if (
+      valueToInsert.includes('<|') && valueToInsert.includes('|>') ||
+      valueToInsert.includes('&lt;|') && valueToInsert.includes('|&gt;')
+    ) {
+      valueToInsert = valueToInsert
+        .replaceAll('<|', '<a><|')
+        .replaceAll('|>', '|></a>')
+        .replaceAll('&lt;|', '<a><|')
+        .replaceAll('|&gt;', '|></a>')
+    }
+
     const editorState = this.props.value.getEditorState();
     const selection = editorState.getSelection();
     let currentContent = editorState.getCurrentContent();
 
-    const anchorKey = selection.getAnchorKey();
-    const focusKey = selection.getFocusKey();
     const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
     const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
 
@@ -470,13 +483,29 @@ export default class RichTextEditor extends Component {
       newSelectionState = currentContent.getSelectionAfter();
     }
 
-    const { contentBlocks, entityMap } = htmlToDraft(value);
+    const { contentBlocks, entityMap } = htmlToDraft(valueToInsert);
     currentContent = Modifier.replaceWithFragment(
       currentContent,
       newSelectionState,
       ContentState.createFromBlockArray(contentBlocks, entityMap).getBlockMap()
     );
-    this._onChange(EditorState.push(editorState, currentContent, 'insert-fragment'));
+
+    let htmlValue = stateToHTML(currentContent);
+
+    this.props.onChange(createValueFromString(htmlValue, 'html', {
+      customInlineFn(elem, { Entity }) {
+        const { tagName, className } = elem;
+        if (tagName === 'A' && className === 'orange_insert-point') {
+          return Entity('LINK', { className: 'orange_insert-point' });
+        }
+        if (tagName === 'A' && className === '') {
+          return Entity('LINK', { className: 'yellow-dropdown_option' });
+        }
+        if (className === 'text-outdent') {
+          return Entity('SPAN');
+        }
+      }
+    }));
   }
 
   async _syncInsert() {
@@ -508,7 +537,7 @@ export default class RichTextEditor extends Component {
       return;
     }
 
-    const value = await this.props.syncInsertRequest(word, focusOffset, anchorOffset);
+    const value = await this.props.syncInsertRequest(word, focusOffset, anchorOffset, anchorKey, focusKey);
 
     if (typeof value !== 'string') {
       return;
@@ -518,6 +547,8 @@ export default class RichTextEditor extends Component {
       value,
       anchorOffset,
       focusOffset,
+      anchorKey,
+      focusKey,
     });
   }
 
@@ -686,6 +717,7 @@ Object.assign(RichTextEditor, {
   ButtonGroup,
   Button,
   Dropdown,
+  Entity,
 });
 
 export {
@@ -702,4 +734,5 @@ export {
   EMPTY_PARAGRAPH_MARK,
   UNIQUE_PARAGRAPH,
   editOnPaste,
+  Entity,
 };
