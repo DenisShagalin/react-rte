@@ -644,6 +644,23 @@ export const processStartBlockValue = (offset, startBlockValue) => {
   return startPosition; // Return the updated startPosition
 };
 
+export const checkWhitespaceSelection = (
+  focusOffset,
+  anchorOffset,
+  startBlockValue,
+  endBlockValue
+) => {
+  if (startBlockValue !== endBlockValue) {
+    return false;
+  }
+  if (focusOffset !== anchorOffset) {
+    return false;
+  }
+  const prev = startBlockValue[focusOffset - 1] === ' ';
+  const next = endBlockValue[anchorOffset] === ' ';
+  return prev === next;
+};
+
 export const getStateWithFullWordSelection = (editorState: EditorState): EditorState => {
   const selectionState = editorState.getSelection();
   let anchorKey = selectionState.getAnchorKey();

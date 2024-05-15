@@ -20,7 +20,7 @@ import EventEmitter from 'events';
 import { BLOCK_TYPE } from 'draft-js-utils';
 import htmlToDraft from 'html-to-draftjs';
 
-import { processStartBlockValue, processEndBlockValue } from './lib/EditorToolbar';
+import { processStartBlockValue, processEndBlockValue, checkWhitespaceSelection } from './lib/EditorToolbar';
 
 import { editOnPaste, EMPTY_PARAGRAPH_MARK, UNIQUE_PARAGRAPH } from './lib/onPasteEdit';
 
@@ -527,7 +527,14 @@ export default class RichTextEditor extends Component {
     focusOffset = processStartBlockValue(focusOffset, startBlockValue);
     anchorOffset = processEndBlockValue(anchorOffset, endBlockValue);
 
-    if (focusOffset === anchorOffset) {
+    const isWhiteSpaceSelected = checkWhitespaceSelection(
+      focusOffset,
+      anchorOffset,
+      startBlockValue,
+      endBlockValue
+    );
+
+    if (focusOffset === anchorOffset && !isWhiteSpaceSelected) {
       console.log('wrong position of cursor');
       return null;
     }
