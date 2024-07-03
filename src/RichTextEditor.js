@@ -96,6 +96,7 @@ export default class RichTextEditor extends Component {
   componentDidMount() {
     const { autoFocus } = this.props;
 
+    this._triggerBlur();
     if (!autoFocus) {
       return;
     }
@@ -129,6 +130,17 @@ export default class RichTextEditor extends Component {
       focusKey: this.state.lastFocusKey,
     });
     this._onChange(EditorState.forceSelection(editorState, newSelectionState));
+  }
+
+  _triggerBlur() {
+    const html = this.props.value && this.props.value._cache && this.props.value._cache.html;
+    if (typeof html === 'string' && html.match(/<\/p><\/p>/)) {
+      this.editor.focus();
+      setTimeout(() => {
+        this.editor.blur();
+        this.props.onBlur(true);
+      });
+    }
   }
 
   render() {
