@@ -457,6 +457,10 @@ export default class RichTextEditor extends Component {
     });
   };
 
+  prettifyBreakLines(HTML) {
+    return HTML.replaceAll(/<p>(&nbsp;)?<br>\n( )?(&nbsp;)?<\/p>/g, '<p><br></p>');
+  };
+
   _insertHTMLByProps({
     value,
     anchorOffset,
@@ -507,6 +511,8 @@ export default class RichTextEditor extends Component {
     );
 
     let htmlValue = stateToHTML(currentContent);
+
+    htmlValue = this.prettifyBreakLines(htmlValue);
 
     this.props.onChange(createValueFromString(htmlValue, 'html', {
       customInlineFn(elem, { Entity }) {
