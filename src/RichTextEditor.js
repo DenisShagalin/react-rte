@@ -49,7 +49,7 @@ const styleMap = {
   },
 };
 
-type ChangeHandler = (value: EditorValue) => any;
+type ChangeHandler = (value: EditorValue, t?: boolean) => any;
 
 type Props = {
   className?: string;
@@ -527,7 +527,7 @@ export default class RichTextEditor extends Component {
           return Entity('SPAN');
         }
       }
-    }));
+    }), true);
   }
 
   async _syncInsert() {
