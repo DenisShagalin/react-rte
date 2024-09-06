@@ -248,6 +248,16 @@ export default class EditorToolbar extends Component {
             {toolbarConfig.EXTRA_OPTIONS.insert(this.buttonRef)}
           </button>
         )}
+        {toolbarConfig.EXTRA_OPTIONS.undo && (
+          <button onClick={this._undo} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.undo(this.buttonRef)}
+          </button>
+        )}
+        {toolbarConfig.EXTRA_OPTIONS.redo && (
+          <button onClick={this._redo} onMouseDown={(e) => e.preventDefault()}>
+            {toolbarConfig.EXTRA_OPTIONS.redo(this.buttonRef)}
+          </button>
+        )}
         {this.props.symbols && this.props.symbols.length && this.props.customRenderer({
           open: this.props.isOpen,
           onClick: this.props.insertSymbol,
