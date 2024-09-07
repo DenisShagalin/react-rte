@@ -377,6 +377,11 @@ export default class RichTextEditor extends Component {
       this._syncInsert();
       return;
     }
+    if (!keyCommand && this.props.isSpellCheckEnabled(event)) {
+      event.preventDefault();
+      this._spellCheck();
+      return;
+    }
     // F8 - highlight selected text
     if (!keyCommand && event.keyCode === 119) {
       event.preventDefault();
@@ -579,6 +584,40 @@ export default class RichTextEditor extends Component {
       anchorKey,
       focusKey,
     });
+  }
+
+  _spellCheck() {
+    if (!this.props.onSpellCheck) {
+      return;
+    }
+
+    const editorState = this.props.value.getEditorState();
+    const selectionState = editorState.getSelection();
+    let anchorKey = selectionState.getAnchorKey();
+    let focusKey = selectionState.getFocusKey();
+    let anchorOffset = selectionState.getEndOffset();
+    let focusOffset = selectionState.getStartOffset();
+
+    let currentContent = editorState.getCurrentContent();
+    const endBlockValue = currentContent.getBlockForKey(anchorKey).getText();
+    const startBlockValue = currentContent.getBlockForKey(focusKey).getText();
+
+    focusOffset = processStartBlockValue(focusOffset, startBlockValue);
+    anchorOffset = processEndBlockValue(anchorOffset, endBlockValue);
+
+    const isWhiteSpaceSelected = checkWhitespaceSelection(
+      focusOffset,
+      anchorOffset,
+      startBlockValue,
+      endBlockValue
+    );
+
+    if (focusOffset === anchorOffset && !isWhiteSpaceSelected) {
+      return null;
+    }
+    const word = startBlockValue.substring(focusOffset, anchorOffset);
+
+    this.props.onSpellCheck(word);
   }
 
   _insertPoint() {

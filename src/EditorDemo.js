@@ -97,6 +97,8 @@ export default class EditorDemo extends Component {
               console.log(value, 'VALUE for API');
               return 'API_VALUE'
             }}
+            isSpellCheckEnabled={(event) => event.keyCode === 117}
+            onSpellCheck={(w) => {console.log(w)}}
           />
         </div>
         <div className="row">
