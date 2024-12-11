@@ -1,6 +1,6 @@
 /* @flow */
 import React, { Component } from 'react';
-import { CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity, ContentState } from 'draft-js';
+import { CompositeDecorator, Editor, EditorState, Modifier, RichUtils, Entity, ContentState, convertFromHTML } from 'draft-js';
 import getDefaultKeyBinding from 'draft-js/lib/getDefaultKeyBinding';
 import { getTextAlignBlockMetadata, getTextAlignClassName, getTextAlignStyles } from './lib/blockStyleFunctions';
 import changeBlockDepth from './lib/changeBlockDepth';
@@ -18,7 +18,6 @@ import cx from 'classnames';
 import autobind from 'class-autobind';
 import EventEmitter from 'events';
 import { BLOCK_TYPE } from 'draft-js-utils';
-import htmlToDraft from 'html-to-draftjs';
 
 import { processStartBlockValue, processEndBlockValue, checkWhitespaceSelection } from './lib/EditorToolbar';
 
@@ -508,7 +507,8 @@ export default class RichTextEditor extends Component {
       newSelectionState = currentContent.getSelectionAfter();
     }
 
-    const { contentBlocks, entityMap } = htmlToDraft(valueToInsert);
+    const { contentBlocks, entityMap } = convertFromHTML(valueToInsert);
+
     currentContent = Modifier.replaceWithFragment(
       currentContent,
       newSelectionState,

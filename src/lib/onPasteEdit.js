@@ -38,9 +38,10 @@ const isNotValidHTML = (HTML) => {
   return true;
 };
 
-export const editOnPaste = (editor, e, onPasteValidation) => {
+export const editOnPaste = async (editor, e, onPasteValidation) => {
   e.preventDefault();
   const data = new DataTransfer(e.clipboardData);
+  const RTFValue = e.clipboardData.getData('text/rtf');
 
   var textBlocks = [];
   var text = data.getText();
@@ -64,10 +65,9 @@ export const editOnPaste = (editor, e, onPasteValidation) => {
         html.indexOf(editor.getEditorKey()) !== -1 ||
         textBlocks.length === 1 && internalClipboard.size === 1 && internalClipboard.first().getText() === text) {
         const newState = insertFragment(editor._latestEditorState, internalClipboard);
-        const pastedHTML = stateToHTML(newState.getCurrentContent());
-        if (onPasteValidation && onPasteValidation(pastedHTML)) {
-          editor.update(newState);
-        }
+        // const pastedHTML = stateToHTML(newState.getCurrentContent());
+        // copy/paste from rte to rte
+        editor.update(newState);
         return;
       }
     } else if (internalClipboard && data.types.includes('com.apple.webarchive') && !data.types.includes('text/html') && areTextBlocksAndClipboardEqual(textBlocks, internalClipboard)) {
@@ -84,8 +84,30 @@ export const editOnPaste = (editor, e, onPasteValidation) => {
           var htmlMap = BlockMapBuilder.createFromArray(contentBlocks);
           const newState = insertFragment(editor._latestEditorState, htmlMap, entityMap);
           const pastedHTML = stateToHTML(newState.getCurrentContent());
-          if (onPasteValidation && onPasteValidation(pastedHTML)) {
+
+          if (!onPasteValidation) {
             editor.update(newState);
+            return;
+          }
+
+          try {
+            const correctedHTML = await onPasteValidation(pastedHTML);
+            if (!correctedHTML) {
+              return;
+            }
+
+            if (pastedHTML === correctedHTML) {
+              editor.update(newState);
+              return;
+            }
+            const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
+            if (processor.contentBlocks) {
+              const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+              const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+              editor.update(state);
+            }
+          } catch(e) {
+            console.log(e)
           }
           return;
         }
@@ -93,6 +115,28 @@ export const editOnPaste = (editor, e, onPasteValidation) => {
     }
 
     editor.setClipboard(null);
+  }
+
+  if (RTFValue && onPasteValidation) {
+    try {
+      const HTMLFromRTF = await onPasteValidation(RTFValue);
+
+      if (!HTMLFromRTF) {
+        return;
+      }
+  
+      if (HTMLFromRTF !== RTFValue) {
+        const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
+        if (processor.contentBlocks) {
+          const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+          const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+          editor.update(state);
+          return;
+        }
+      }
+    } catch(e) {
+      console.log(e);
+    }
   }
 
   if (textBlocks.length) {
