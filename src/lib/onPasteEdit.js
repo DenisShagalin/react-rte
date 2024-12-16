@@ -7,6 +7,7 @@ import CharacterMetadata from 'draft-js/lib/CharacterMetadata';
 import getEntityKeyForSelection from 'draft-js/lib/getEntityKeyForSelection';
 import DataTransfer from 'fbjs/lib/DataTransfer';
 import { stateToHTML } from 'draft-js-export-html';
+import { createValueFromString } from '../RichTextEditor';
 
 export const UNIQUE_PARAGRAPH = '<p>__unique_draftjs_empty_paragraph</p>';
 export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</span>';
@@ -31,11 +32,6 @@ function areTextBlocksAndClipboardEqual(textBlocks, blockMap) {
   return textBlocks.length === blockMap.size && blockMap.valueSeq().every(function (block, ii) {
     return block.getText() === textBlocks[ii];
   });
-};
-
-const isNotValidHTML = (HTML) => {
-  console.log(HTML)
-  return true;
 };
 
 export const editOnPaste = async (editor, e, onPasteValidation) => {
@@ -100,12 +96,17 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
               editor.update(newState);
               return;
             }
-            const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
-            if (processor.contentBlocks) {
-              const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
-              const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
-              editor.update(state);
-            }
+
+            editor.update(createValueFromString(correctedHTML, 'html')._editorState);
+            return;
+
+            // const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
+            // if (processor.contentBlocks) {
+            //   const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+            //   const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+            //   editor.update(state);
+            // }
+
           } catch(e) {
             console.log(e)
           }
@@ -126,13 +127,15 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
       }
   
       if (HTMLFromRTF !== RTFValue) {
-        const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
-        if (processor.contentBlocks) {
-          const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
-          const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
-          editor.update(state);
-          return;
-        }
+        editor.update(createValueFromString(HTMLFromRTF, 'html')._editorState);
+        return;
+        // const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
+        // if (processor.contentBlocks) {
+        //   const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+        //   const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+        //   editor.update(state);
+        //   return;
+        // }
       }
     } catch(e) {
       console.log(e);

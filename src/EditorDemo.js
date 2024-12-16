@@ -99,6 +99,7 @@ export default class EditorDemo extends Component {
             }}
             isSpellCheckEnabled={(event) => event.keyCode === 117}
             onSpellCheck={(w) => {console.log(w)}}
+            onPasteValidation={(t) => t}
           />
         </div>
         <div className="row">
