@@ -74,13 +74,14 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
     if (html) {
       var htmlFragment = DraftPasteProcessor.processHTML(html, editor.props.blockRenderMap);
 
-      const pastedContentState = ContentState.createFromBlockArray(htmlFragment.contentBlocks, htmlFragment.entityMap);
-      const pastedHTML = stateToHTML(pastedContentState);
-
       if (htmlFragment) {
         var contentBlocks = htmlFragment.contentBlocks;
         var entityMap = htmlFragment.entityMap;
+
         if (contentBlocks) {
+          const pastedContentState = ContentState.createFromBlockArray(htmlFragment.contentBlocks, htmlFragment.entityMap);
+          const pastedHTML = stateToHTML(pastedContentState);
+
           var htmlMap = BlockMapBuilder.createFromArray(contentBlocks);
           const newState = insertFragment(editor._latestEditorState, htmlMap, entityMap);
 
