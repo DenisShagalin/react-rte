@@ -7,7 +7,7 @@ import CharacterMetadata from 'draft-js/lib/CharacterMetadata';
 import getEntityKeyForSelection from 'draft-js/lib/getEntityKeyForSelection';
 import DataTransfer from 'fbjs/lib/DataTransfer';
 import { stateToHTML } from 'draft-js-export-html';
-import { createValueFromString } from '../RichTextEditor';
+import { ContentState } from 'draft-js';
 
 export const UNIQUE_PARAGRAPH = '<p>__unique_draftjs_empty_paragraph</p>';
 export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</span>';
@@ -73,13 +73,16 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
 
     if (html) {
       var htmlFragment = DraftPasteProcessor.processHTML(html, editor.props.blockRenderMap);
+
+      const pastedContentState = ContentState.createFromBlockArray(htmlFragment.contentBlocks, htmlFragment.entityMap);
+      const pastedHTML = stateToHTML(pastedContentState);
+
       if (htmlFragment) {
         var contentBlocks = htmlFragment.contentBlocks;
         var entityMap = htmlFragment.entityMap;
         if (contentBlocks) {
           var htmlMap = BlockMapBuilder.createFromArray(contentBlocks);
           const newState = insertFragment(editor._latestEditorState, htmlMap, entityMap);
-          const pastedHTML = stateToHTML(newState.getCurrentContent());
 
           if (!onPasteValidation) {
             editor.update(newState);
@@ -97,17 +100,15 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
               return;
             }
 
-            editor.update(createValueFromString(correctedHTML, 'html')._editorState);
-            return;
+            const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
+            if (processor.contentBlocks) {
+              const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+              const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+              editor.update(state);
+              return;
+            }
 
-            // const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
-            // if (processor.contentBlocks) {
-            //   const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
-            //   const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
-            //   editor.update(state);
-            // }
-
-          } catch(e) {
+          } catch (e) {
             console.log(e)
           }
           return;
@@ -125,19 +126,15 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
       if (!HTMLFromRTF) {
         return;
       }
-  
-      if (HTMLFromRTF !== RTFValue) {
-        editor.update(createValueFromString(HTMLFromRTF, 'html')._editorState);
+
+      const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
+      if (processor.contentBlocks) {
+        const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
+        const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
+        editor.update(state);
         return;
-        // const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
-        // if (processor.contentBlocks) {
-        //   const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
-        //   const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
-        //   editor.update(state);
-        //   return;
-        // }
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e);
     }
   }
