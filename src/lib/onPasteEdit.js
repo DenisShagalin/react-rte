@@ -7,7 +7,7 @@ import CharacterMetadata from 'draft-js/lib/CharacterMetadata';
 import getEntityKeyForSelection from 'draft-js/lib/getEntityKeyForSelection';
 import DataTransfer from 'fbjs/lib/DataTransfer';
 import { stateToHTML } from 'draft-js-export-html';
-import { ContentState } from 'draft-js';
+import { ContentState, convertFromHTML } from 'draft-js';
 
 export const UNIQUE_PARAGRAPH = '<p>__unique_draftjs_empty_paragraph</p>';
 export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</span>';
@@ -72,7 +72,8 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
     }
 
     if (html) {
-      var htmlFragment = DraftPasteProcessor.processHTML(html, editor.props.blockRenderMap);
+      // var htmlFragment = DraftPasteProcessor.processHTML(html, editor.props.blockRenderMap);
+      let htmlFragment = convertFromHTML(html);
 
       if (htmlFragment) {
         var contentBlocks = htmlFragment.contentBlocks;
@@ -101,7 +102,8 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
               return;
             }
 
-            const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
+            // const processor = DraftPasteProcessor.processHTML(correctedHTML, editor.props.blockRenderMap);
+            const processor = convertFromHTML(correctedHTML);
             if (processor.contentBlocks) {
               const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
               const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
@@ -128,7 +130,8 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
         return;
       }
 
-      const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
+      // const processor = DraftPasteProcessor.processHTML(HTMLFromRTF, editor.props.blockRenderMap);
+      const processor = convertFromHTML(HTMLFromRTF);
       if (processor.contentBlocks) {
         const map = BlockMapBuilder.createFromArray(processor.contentBlocks);
         const state = insertFragment(editor._latestEditorState, map, processor.entityMap);
