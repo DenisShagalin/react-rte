@@ -92,7 +92,7 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
           }
 
           try {
-            const correctedHTML = await onPasteValidation(pastedHTML);
+            const correctedHTML = await onPasteValidation(pastedHTML, html);
             if (!correctedHTML) {
               return;
             }
