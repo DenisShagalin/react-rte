@@ -72,6 +72,7 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
     }
 
     if (html) {
+      html = html.replaceAll('\r\n', ' ');
       // var htmlFragment = DraftPasteProcessor.processHTML(html, editor.props.blockRenderMap);
       let htmlFragment = convertFromHTML(html);
 
