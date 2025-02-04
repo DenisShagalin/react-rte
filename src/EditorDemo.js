@@ -82,6 +82,7 @@ export default class EditorDemo extends Component {
             blockStyleFn={getTextAlignClassName}
             toolbarConfig={toolbarConfig}
             customStyleMap={colorStyleMap}
+            disableSoftNewLine
             onFocus={() => {
               this.setState({
                 isOpen: true

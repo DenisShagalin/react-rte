@@ -14,6 +14,7 @@ export const EMPTY_PARAGRAPH_MARK = '<span>__unique_draftjs_empty_paragraph</spa
 export const emptyLineRegex = /<br data-text="true">/g;
 
 const NEWLINE_REGEX = /\r\n?|\n/g;
+const FRAGMENT_REGEX = /<!--StartFragment-->[\s\S]*?<!--EndFragment-->/
 
 function splitTextIntoTextBlocks(text) {
   return text.split(NEWLINE_REGEX);
@@ -45,6 +46,21 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
   var editorState = editor._latestEditorState;
 
   html = html && html.replaceAll(emptyLineRegex, EMPTY_PARAGRAPH_MARK);
+
+  if (html.match(FRAGMENT_REGEX)) {
+    let withoutFragment = html.match(FRAGMENT_REGEX)[0]
+      .replace('<!--StartFragment-->', '')
+      .replace('<!--EndFragment-->', '');
+
+    if (
+      !withoutFragment.match(/<\/\S+>/) &&
+      withoutFragment.match(/\r\n|\r|\n/g)
+    ) {
+      const splittedByLineBreaks = withoutFragment.split(/\r\n|\r|\n/g);
+      const withParagraphs = splittedByLineBreaks.map((string) => `<p>${string}</p>`).join('');
+      html = html.replace(FRAGMENT_REGEX, `<!--StartFragment-->${withParagraphs}<!--EndFragment-->`);
+    }
+  }
 
   if (editor.props.handlePastedText && isEventHandled(editor.props.handlePastedText(text, html, editorState))) {
     return;
