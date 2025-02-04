@@ -47,7 +47,7 @@ export const editOnPaste = async (editor, e, onPasteValidation) => {
 
   html = html && html.replaceAll(emptyLineRegex, EMPTY_PARAGRAPH_MARK);
 
-  if (html.match(FRAGMENT_REGEX)) {
+  if (html && html.match(FRAGMENT_REGEX)) {
     let withoutFragment = html.match(FRAGMENT_REGEX)[0]
       .replace('<!--StartFragment-->', '')
       .replace('<!--EndFragment-->', '');
